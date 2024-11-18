@@ -1,3 +1,4 @@
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -6,6 +7,7 @@ import 'package:freelancer/pages/freelancer/pages_freelancer/chat_page.dart';
 import 'package:freelancer/pages/freelancer/pages_freelancer/other_user_profile_page.dart';
 import 'package:freelancer/services/auth/auth_service.dart';
 import 'package:freelancer/services/chat/chat_service.dart';
+
 
 class TopUser extends StatefulWidget {
   const TopUser({super.key});
@@ -46,10 +48,7 @@ class _TopUserState extends State<TopUser> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Color.fromRGBO(250, 250, 250, 1),
-      body: _buildUserList(),
-    );
+    return _buildUserList();
   }
 
   Widget _buildUserList() {
@@ -68,7 +67,8 @@ class _TopUserState extends State<TopUser> {
 
         // Return ListView
         return ListView.builder(
-          physics: NeverScrollableScrollPhysics(),
+          shrinkWrap: true, // Makes ListView take up only needed space
+          physics: ClampingScrollPhysics(),
           itemCount: snapshot.data!.docs.length,
           itemBuilder: (context, index) {
             Map<String, dynamic> userData =

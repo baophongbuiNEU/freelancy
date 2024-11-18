@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:freelancer/components/my_button.dart';
 import 'package:freelancer/pages/freelancer/auth_freelancer/login_or_register_freelancer.dart';
 
+
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 

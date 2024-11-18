@@ -11,7 +11,6 @@ class ProjectUserJob extends StatefulWidget {
     required this.experience,
     required this.description,
     required this.enroll_end_time,
-    required this.enroll_start_time,
     required this.happeningTime,
     required this.location,
     required this.requirement,
@@ -26,7 +25,6 @@ class ProjectUserJob extends StatefulWidget {
     required this.accepted,
   });
 
-  Timestamp enroll_start_time;
   Timestamp enroll_end_time;
   String experience = '';
   Timestamp happeningTime;
@@ -67,7 +65,8 @@ class _ProjectUserJobState extends State<ProjectUserJob> {
     int daysLeft = endDate.difference(currentDate).inDays;
     int hoursLeft = daysLeft == 0 ? endDate.difference(currentDate).inHours : 0;
     bool isEnrollmentEnded = endDate.isBefore(currentDate);
-
+    bool isDone = widget.category == "Done";
+    bool isAccepted = widget.accepted.isNotEmpty;
     final uploadTime =
         DateFormat('dd/MM/yyyy').format(widget.timestamp.toDate());
     String editedSalary = int.parse(widget.salary) > 1000
@@ -79,8 +78,7 @@ class _ProjectUserJobState extends State<ProjectUserJob> {
     final happeningTime =
         DateFormat('dd/MM/yyyy HH:mm').format(widget.happeningTime.toDate());
 
-    Color borderColor =
-        isEnrollmentEnded ? Colors.red : Color.fromRGBO(67, 101, 222, 1);
+    Color borderColor = isDone ? Colors.green : Color.fromRGBO(67, 101, 222, 1);
 
     return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
       stream: _userDataStream,
@@ -103,7 +101,6 @@ class _ProjectUserJobState extends State<ProjectUserJob> {
                   MaterialPageRoute(
                     builder: (context) => JobDetails(
                       jobID: widget.jobID,
-                      uid: user["uid"],
                       enrolls: List<String>.from(
                         widget.enrolls ?? [],
                       ),
@@ -172,12 +169,20 @@ class _ProjectUserJobState extends State<ProjectUserJob> {
                         side: BorderSide.none,
                         padding: EdgeInsets.all(0),
                         label: Text(
-                          isEnrollmentEnded == false ? 'Đang mở' : 'Đã đóng',
+                          isDone == true
+                              ? 'Đã hoàn thành'
+                              : isEnrollmentEnded == false
+                                  ? isAccepted
+                                      ? 'Đang thực hiện'
+                                      : 'Đang mở'
+                                  : 'Đã đóng',
                           style: TextStyle(color: Colors.white, fontSize: 16),
                         ),
-                        backgroundColor: isEnrollmentEnded == false
-                            ? Color.fromRGBO(67, 101, 222, 1)
-                            : Colors.red,
+                        backgroundColor: isDone == true
+                            ? Colors.green
+                            : isEnrollmentEnded == false
+                                ? Color.fromRGBO(67, 101, 222, 1)
+                                : Colors.red,
                       )
                     ],
                   ),
@@ -223,7 +228,7 @@ class _ProjectUserJobState extends State<ProjectUserJob> {
           );
         }
         return Center(
-          child: CircularProgressIndicator(),
+          child: Text("Hiện chưa có công việc nào"),
         );
       },
     );

@@ -2,11 +2,11 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:freelancer/services/auth/auth_service.dart';
 import 'package:freelancer/components/my_button.dart';
 import 'package:freelancer/components/password_field.dart';
 import 'package:freelancer/components/text_field_circle.dart';
 import 'package:freelancer/pages/freelancer/pages_freelancer/home_page_freelancer.dart';
+import 'package:freelancer/services/auth/auth_service.dart';
 
 class Register extends StatefulWidget {
   final void Function()? onTap;
@@ -33,13 +33,53 @@ class _RegisterState extends State<Register> {
   final String _cityController = "";
   final String _positionController = "";
   final String _phoneNumberController = "";
+  final num sumIncome = 0;
+  final num numProjects = 0;
+  final num numExpenses = 0;
+  final num numProfits = 0;
+  final List<String> skills = [];
+  final List<String> experiences = [];
+
   final Timestamp _createdAt = Timestamp.now();
 
   bool? isChecked = false;
 
   //register method
   void register(BuildContext context) async {
-    //circle
+    // Check if any required field is empty
+    if (_nameController.text.isEmpty ||
+        _emailController.text.isEmpty ||
+        _passwordController.text.isEmpty ||
+        _confirmPasswordController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Vui lòng điền đầy đủ thông tin!"),
+        ),
+      );
+      return;
+    }
+
+    // Check if the password and confirm password match
+    if (_passwordController.text != _confirmPasswordController.text) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Mật khẩu không khớp, vui lòng nhập lại!"),
+        ),
+      );
+      return;
+    }
+
+    // Check if the terms and conditions are accepted
+    if (isChecked == false) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Hãy đồng ý với các điều khoản của chúng tôi!"),
+        ),
+      );
+      return;
+    }
+
+    // Show loading circle
     showDialog(
       context: context,
       builder: (context) {
@@ -48,61 +88,48 @@ class _RegisterState extends State<Register> {
         );
       },
     );
+
     //get auth service
     final _auth = AuthService();
-    if (_passwordController.text == _confirmPasswordController.text &&
-        isChecked == true) {
-      try {
-        await _auth.signUpWithEmailPassword(
-          _emailController.text,
-          _passwordController.text,
-          _freelancerRole,
-          _nameController.text,
-          _avatar,
-          _bioController,
-          _addressController,
-          _createdAt,
-          _cityController,
-          _positionController,
-          _phoneNumberController,
-        );
-        Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("Đăng ký thành công."),
-          ),
-        );
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (context) => HomePageFreelancer()),
-          (route) => false,
-        );
-      } catch (e) {
-        showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: Text("Error!"),
-            content: Text(e.toString()),
-          ),
-        );
-      }
-    } //password don't match
-    else if (isChecked == false) {
+
+    try {
+      await _auth.signUpWithEmailPassword(
+        _emailController.text,
+        _passwordController.text,
+        _freelancerRole,
+        _nameController.text,
+        _avatar,
+        _bioController,
+        _addressController,
+        _createdAt,
+        _cityController,
+        _positionController,
+        _phoneNumberController,
+        sumIncome,
+        numProjects,
+        numExpenses,
+        numProfits,
+        skills,
+        experiences,
+      );
       Navigator.pop(context);
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text("Lỗi!"),
-          content: Text("Hãy đồng ý với các điều khoản của chúng tôi!"),
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Đăng ký thành công."),
         ),
       );
-    } else {
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => HomePageFreelancer()),
+        (route) => false,
+      );
+    } catch (e) {
       Navigator.pop(context);
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          title: Text("Lỗi!"),
-          content: Text("Mật khẩu không khớp, vui lòng nhập lại!"),
+          title: Text("Error!"),
+          content: Text(e.toString()),
         ),
       );
     }

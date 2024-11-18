@@ -29,38 +29,48 @@ class UserTile extends StatelessWidget {
             borderRadius: BorderRadius.circular(12)),
         child: Row(
           children: [
-            SizedBox(
-              width: 60,
-              height: 60,
-              child: CircleAvatar(
-                backgroundImage: NetworkImage(
-                  avatar,
+            Expanded(
+              flex: 0,
+              child: SizedBox(
+                width: 60,
+                height: 60,
+                child: CircleAvatar(
+                  backgroundImage: NetworkImage(
+                    avatar,
+                  ),
                 ),
               ),
             ),
             SizedBox(
               width: 15,
             ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  userName,
-                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
-                ),
-                Text(
-                  email,
-                  style: TextStyle(fontSize: 15),
-                ),
-              ],
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    userName,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+                  ),
+                  Text(
+                    email,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 15),
+                  ),
+                ],
+              ),
             ),
-            Spacer(),
-            IconButton(
-                onPressed: onPressed,
-                icon: Icon(
-                  Icons.chat,
-                  color: Color.fromRGBO(67, 101, 222, 1),
-                ))
+            // Spacer(),
+            Expanded(
+              flex: 0,
+              child: IconButton(
+                  onPressed: onPressed,
+                  icon: Icon(
+                    Icons.chat,
+                    color: Color.fromRGBO(67, 101, 222, 1),
+                  )),
+            )
           ],
         ),
       ),

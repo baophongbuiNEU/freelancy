@@ -1,3 +1,4 @@
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/gestures.dart';
@@ -6,6 +7,7 @@ import 'package:freelancer/components/image_viewer.dart';
 import 'package:freelancer/components/like_button.dart';
 import 'package:freelancer/pages/freelancer/pages_freelancer/other_user_profile_page.dart';
 import 'package:freelancer/pages/freelancer/pages_freelancer/user_profile_page.dart';
+
 import 'package:get_time_ago/get_time_ago.dart';
 
 class UserPostCompo extends StatefulWidget {
@@ -158,27 +160,7 @@ class _UserPostCompoState extends State<UserPostCompo> {
                   : null,
             ),
           ),
-          // if (_showDeleteOption)
-          //   Padding(
-          //     padding: EdgeInsets.symmetric(horizontal: 16),
-          //     child: Row(
-          //       mainAxisAlignment: MainAxisAlignment.end,
-          //       children: [
-          //         TextButton(
-          //           onPressed: () async {
-          //             await FirebaseFirestore.instance
-          //                 .collection('posts')
-          //                 .doc(widget.postId)
-          //                 .delete();
-          //           },
-          //           child: Text(
-          //             'Delete',
-          //             style: TextStyle(color: Colors.red),
-          //           ),
-          //         ),
-          //       ],
-          //     ),
-          //   ),
+
           Padding(
               padding: EdgeInsets.symmetric(horizontal: 16),
               child: _buildContent(widget.content)),
@@ -220,8 +202,8 @@ class _UserPostCompoState extends State<UserPostCompo> {
                     Text(widget.likes.length.toString()),
                   ],
                 ),
-                _buildInteractionButton(Icons.comment, "30"),
-                _buildInteractionButton(Icons.share, "10"),
+                // _buildInteractionButton(Icons.comment, "30"),
+                // _buildInteractionButton(Icons.share, "10"),
               ],
             ),
           ),
@@ -230,20 +212,20 @@ class _UserPostCompoState extends State<UserPostCompo> {
     );
   }
 
-  Widget _buildInteractionButton(IconData icon, String count) {
-    return Row(
-      children: [
-        Icon(icon, size: 16, color: Colors.grey),
-        SizedBox(width: 4),
-        Text(count, style: TextStyle(color: Colors.grey)),
-      ],
-    );
-  }
+  // Widget _buildInteractionButton(IconData icon, String count) {
+  //   return Row(
+  //     children: [
+  //       Icon(icon, size: 16, color: Colors.grey),
+  //       SizedBox(width: 4),
+  //       Text(count, style: TextStyle(color: Colors.grey)),
+  //     ],
+  //   );
+  // }
 
   Widget _buildContent(
     String content,
   ) {
-    const int maxCharacters = 100;
+    const int maxCharacters = 400;
     if (content.length >= maxCharacters) {
       String reducedText = '${content.substring(0, maxCharacters)}...';
       return RichText(

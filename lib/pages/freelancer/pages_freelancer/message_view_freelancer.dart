@@ -3,10 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:freelancer/components/user_tile.dart';
 import 'package:freelancer/components/user_tile_message.dart';
+import 'package:freelancer/pages/freelancer/auth_freelancer/login_or_register_freelancer.dart';
 import 'package:freelancer/pages/freelancer/pages_freelancer/chat_page.dart';
 import 'package:freelancer/pages/freelancer/pages_freelancer/other_user_profile_page.dart';
 import 'package:freelancer/services/auth/auth_service.dart';
 import 'package:freelancer/services/chat/chat_service.dart';
+
 import 'package:get_time_ago/get_time_ago.dart';
 
 class MessageViewFreelancer extends StatefulWidget {
@@ -65,6 +67,13 @@ class _MessageViewFreelancerState extends State<MessageViewFreelancer>
     }
   }
 
+  void logout(BuildContext context) {
+    final auth = AuthService();
+    auth.signOut();
+    Navigator.pushReplacement(context,
+        MaterialPageRoute(builder: (context) => LoginOrRegisterFreelancer()));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -75,43 +84,51 @@ class _MessageViewFreelancerState extends State<MessageViewFreelancer>
           title: Text(
             "Tin nhắn",
           ),
+          actions: [
+            IconButton(
+              icon: Icon(Icons.logout),
+              onPressed: () => logout(context),
+            ),
+          ],
         ),
         body: Column(
           children: [
-            Padding(
-              padding: const EdgeInsets.only(
-                  left: 25, right: 25, bottom: 10, top: 10),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(30),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey.withOpacity(0.3),
-                      spreadRadius: 2,
-                      blurRadius: 3,
-                      offset: Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: TextField(
-                  controller: _searchController,
-                  decoration: InputDecoration(
-                    hintText: 'Tìm kiếm người dùng...',
-                    prefixIcon: Icon(
-                      Icons.search,
-                      color: Color.fromRGBO(67, 101, 222, 1),
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(30),
-                      borderSide: BorderSide.none,
-                    ),
-                    filled: true,
-                    fillColor: Colors.white,
-                  ),
-                ),
-              ),
-            ),
+            // Padding(
+            //   padding: const EdgeInsets.only(
+            //       left: 25, right: 25, bottom: 10, top: 10),
+            //   child: Container(
+            //     decoration: BoxDecoration(
+            //       color: Colors.white,
+            //       borderRadius: BorderRadius.circular(30),
+            //       boxShadow: [
+            //         BoxShadow(
+            //           color: Colors.grey.withOpacity(0.3),
+            //           spreadRadius: 2,
+            //           blurRadius: 3,
+            //           offset: Offset(0, 2),
+            //         ),
+            //       ],
+            //     ),
+            //     child: TextField(
+            //       controller: _searchController,
+            //       decoration: InputDecoration(
+            //         hintStyle: TextStyle(
+            //             color: Colors.grey, fontWeight: FontWeight.normal),
+            //         hintText: 'Tìm kiếm người dùng...',
+            //         prefixIcon: Icon(
+            //           Icons.search,
+            //           color: Color.fromRGBO(67, 101, 222, 1),
+            //         ),
+            //         border: OutlineInputBorder(
+            //           borderRadius: BorderRadius.circular(30),
+            //           borderSide: BorderSide.none,
+            //         ),
+            //         filled: true,
+            //         fillColor: Colors.white,
+            //       ),
+            //     ),
+            //   ),
+            // ),
             TabBar(
               controller: _tabController,
               tabs: const [

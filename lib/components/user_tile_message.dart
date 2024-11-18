@@ -28,33 +28,45 @@ class UserTileMessage extends StatelessWidget {
             borderRadius: BorderRadius.circular(12)),
         child: Row(
           children: [
-            SizedBox(
-              width: 60,
-              height: 60,
-              child: CircleAvatar(
-                backgroundImage: NetworkImage(
-                  avatar,
+            Expanded(
+              flex: 0,
+              child: SizedBox(
+                width: 60,
+                height: 60,
+                child: CircleAvatar(
+                  backgroundImage: NetworkImage(
+                    avatar,
+                  ),
                 ),
               ),
             ),
             SizedBox(
               width: 15,
             ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  userName,
-                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
-                ),
-                Text(
-                  lastMessage,
-                  style: TextStyle(fontSize: 15),
-                ),
-              ],
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    userName,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+                  ),
+                  Text(
+                    lastMessage,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 15),
+                  ),
+                ],
+              ),
             ),
-            Spacer(),
-            Text(sendTime),
+            // Spacer(),
+            Expanded(
+                flex: 0,
+                child: Text(
+                  sendTime,
+                  overflow: TextOverflow.ellipsis,
+                )),
           ],
         ),
       ),

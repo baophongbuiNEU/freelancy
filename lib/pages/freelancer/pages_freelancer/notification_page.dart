@@ -1,4 +1,13 @@
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:freelancer/components/notfi_compo/enroll_noti.dart';
+import 'package:freelancer/components/notfi_compo/feedback_noti.dart';
+import 'package:freelancer/components/notfi_compo/finance_noti.dart';
+import 'package:freelancer/components/notfi_compo/request_feedback_noti.dart';
+import 'package:freelancer/components/notfi_compo/result_noti.dart';
+
 
 class NotificationPage extends StatefulWidget {
   const NotificationPage({super.key});
@@ -7,86 +16,52 @@ class NotificationPage extends StatefulWidget {
   _NotificationPageState createState() => _NotificationPageState();
 }
 
-class _NotificationPageState extends State<NotificationPage> {
-  String _filter = 'all';
-
-  final List<Map<String, dynamic>> notifications = [
-    {
-      'id': '1',
-      'type': 'enrollment',
-      'person': {'name': 'Nguyễn Văn A', 'avatar': 'assets/avatar1.png'},
-      'content': 'đã ứng tuyển vào vị trí',
-      'jobTitle': 'Kỹ sư phần mềm',
-      'timestamp': DateTime.now().subtract(Duration(minutes: 5)),
-    },
-    {
-      'id': '2',
-      'type': 'message',
-      'person': {'name': 'Trần Thị B', 'avatar': 'assets/avatar2.png'},
-      'content': 'Xin chào, tôi muốn hỏi thêm về vị trí Nhà thiết kế UX/UI',
-      'timestamp': DateTime.now().subtract(Duration(minutes: 30)),
-    },
-    {
-      'id': '3',
-      'type': 'result',
-      'person': {'name': 'Công ty XYZ', 'avatar': 'assets/company1.png'},
-      'content': 'đã phản hồi đơn ứng tuyển của bạn',
-      'jobTitle': 'Quản lý dự án',
-      'result': 'accept',
-      'timestamp': DateTime.now().subtract(Duration(hours: 2)),
-    },
-    {
-      'id': '4',
-      'type': 'enrollment',
-      'person': {'name': 'Lê Văn C', 'avatar': 'assets/avatar3.png'},
-      'content': 'đã ứng tuyển vào vị trí',
-      'jobTitle': 'Chuyên viên marketing',
-      'timestamp': DateTime.now().subtract(Duration(hours: 3)),
-    },
-    {
-      'id': '5',
-      'type': 'result',
-      'person': {'name': 'Công ty ABC', 'avatar': 'assets/company2.png'},
-      'content': 'đã phản hồi đơn ứng tuyển của bạn',
-      'jobTitle': 'Kỹ sư AI',
-      'result': 'decline',
-      'timestamp': DateTime.now().subtract(Duration(days: 1)),
-    },
-  ];
+class _NotificationPageState extends State<NotificationPage>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 4, vsync: this);
+  }
 
   @override
   Widget build(BuildContext context) {
-    final filteredNotifications = _filter == 'all'
-        ? notifications
-        : notifications.where((notif) => notif['type'] == _filter).toList();
-
     return Scaffold(
+      backgroundColor: Color.fromRGBO(250, 250, 250, 1),
       appBar: AppBar(
         title: Text('Thông báo'),
+        backgroundColor: Color.fromRGBO(250, 250, 250, 1),
+        centerTitle: true,
       ),
       body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: [
-                  _buildFilterButton('Tất cả', 'all'),
-                  _buildFilterButton('Ứng tuyển', 'enrollment'),
-                  _buildFilterButton('Tin nhắn', 'message'),
-                  _buildFilterButton('Kết quả', 'result'),
-                ],
-              ),
+          TabBar(
+            controller: _tabController,
+            tabs: const [
+              Tab(text: 'Ứng viên'),
+              Tab(text: 'Kết quả'),
+              Tab(text: 'Tài chính'),
+              Tab(text: 'Đánh giá'),
+            ],
+            labelColor: Color.fromRGBO(67, 101, 222, 1),
+            labelStyle: TextStyle(
+              fontSize: 16,
             ),
+            unselectedLabelColor: Colors.grey,
+            indicatorSize: TabBarIndicatorSize.label,
+            indicatorColor: Color.fromRGBO(67, 101, 222, 1),
           ),
+          SizedBox(height: 10),
           Expanded(
-            child: ListView.builder(
-              itemCount: filteredNotifications.length,
-              itemBuilder: (context, index) {
-                final notification = filteredNotifications[index];
-                return _buildNotificationItem(notification);
-              },
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                _buildListEnroll(),
+                _buildListResult(),
+                _buildFinanceEnroll(),
+                _buildFeedbackEnroll(),
+              ],
             ),
           ),
         ],
@@ -94,111 +69,173 @@ class _NotificationPageState extends State<NotificationPage> {
     );
   }
 
-  Widget _buildFilterButton(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4.0),
-      child: ElevatedButton(
-        onPressed: () => setState(() => _filter = value),
-        style: ElevatedButton.styleFrom(
-          foregroundColor: _filter == value ? Colors.white : Colors.black,
-          backgroundColor: _filter == value
-              ? Theme.of(context).primaryColor
-              : Colors.grey[200],
-        ),
-        child: Text(label),
-      ),
+  StreamBuilder<QuerySnapshot<Map<String, dynamic>>> _buildListResult() {
+    return StreamBuilder(
+      stream: FirebaseFirestore.instance
+          .collection("notifications")
+          .where("type", isEqualTo: "result_noti")
+          .where("candidateID",
+              isEqualTo: FirebaseAuth.instance.currentUser!.uid)
+          .orderBy("timestamp", descending: true)
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          if (snapshot.data!.docs.isEmpty) {
+            return Center(
+              child: Text('Hiện chưa có thông báo'),
+            );
+          }
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 15),
+            child: ListView.builder(
+                itemCount: snapshot.data!.docs.length,
+                itemBuilder: (context, index) {
+                  final post = snapshot.data!.docs[index];
+
+                  return ResultNoti(
+                    jobID: post["jobID"],
+                    uid: post["employerUID"],
+                    clicked: post["clicked"],
+                    postID: post.id,
+                  );
+                }),
+          );
+        } else if (snapshot.hasError) {
+          return Center(
+            child: Text(snapshot.error.toString()),
+          );
+        }
+        return Center(
+          child: Text("Hiện chưa có thông báo"),
+        );
+      },
     );
   }
 
-  Widget _buildNotificationItem(Map<String, dynamic> notification) {
-    return Card(
-      margin: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundImage: AssetImage(notification['person']['avatar']),
-        ),
-        title: RichText(
-          text: TextSpan(
-            children: [
-              TextSpan(
-                  text: notification['person']['name'],
-                  style: TextStyle(
-                      fontWeight: FontWeight.bold, color: Colors.black)),
-              TextSpan(
-                  text: ' ${notification['content']} ',
-                  style: TextStyle(color: Colors.black)),
-              if (notification['jobTitle'] != null)
-                TextSpan(
-                    text: notification['jobTitle'],
-                    style: TextStyle(
-                        fontWeight: FontWeight.bold, color: Colors.black)),
-            ],
-          ),
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (notification['type'] == 'message')
-              Text(notification['content'],
-                  style: TextStyle(color: Colors.grey[600])),
-            if (notification['type'] == 'result')
-              Chip(
-                label: Text(
-                  notification['result'] == 'accept' ? 'Chấp nhận' : 'Từ chối',
-                  style: TextStyle(color: Colors.white),
-                ),
-                backgroundColor: notification['result'] == 'accept'
-                    ? Colors.green
-                    : Colors.red,
-              ),
-            Text(
-              _formatTimestamp(notification['timestamp']),
-              style: TextStyle(color: Colors.grey[500], fontSize: 12),
-            ),
-          ],
-        ),
-        trailing: _getNotificationIcon(notification['type']),
-      ),
+  StreamBuilder<QuerySnapshot<Map<String, dynamic>>> _buildListEnroll() {
+    return StreamBuilder(
+      stream: FirebaseFirestore.instance
+          .collection("notifications")
+          .where("type", isEqualTo: "enroll_noti")
+          .where("employerUID",
+              isEqualTo: FirebaseAuth.instance.currentUser!.uid)
+          .orderBy("timestamp", descending: true)
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.hasData && snapshot.data!.docs.isNotEmpty) {
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 15),
+            child: ListView.builder(
+                itemCount: snapshot.data!.docs.length,
+                itemBuilder: (context, index) {
+                  final post = snapshot.data!.docs[index];
+
+                  return EnrollNoti(
+                    jobID: post["jobID"],
+                    uid: post["candidateID"],
+                    clicked: post["clicked"],
+                    postID: post.id,
+                  );
+                }),
+          );
+        } else if (snapshot.hasError) {
+          return Center(
+            child: Text(snapshot.error.toString()),
+          );
+        }
+        return Center(
+          child: Text("Hiện chưa có thông báo"),
+        );
+      },
     );
   }
 
-  Widget _getNotificationIcon(String type) {
-    IconData iconData;
-    Color color;
+  StreamBuilder<QuerySnapshot<Map<String, dynamic>>> _buildFinanceEnroll() {
+    return StreamBuilder(
+      stream: FirebaseFirestore.instance
+          .collection("notifications")
+          .where("type", isEqualTo: "finance_noti")
+          .where("candidateID",
+              isEqualTo: FirebaseAuth.instance.currentUser!.uid)
+          .orderBy("timestamp", descending: true)
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.hasData && snapshot.data!.docs.isNotEmpty) {
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 15),
+            child: ListView.builder(
+                itemCount: snapshot.data!.docs.length,
+                itemBuilder: (context, index) {
+                  final post = snapshot.data!.docs[index];
 
-    switch (type) {
-      case 'enrollment':
-        iconData = Icons.work;
-        color = Colors.blue;
-        break;
-      case 'message':
-        iconData = Icons.message;
-        color = Colors.green;
-        break;
-      case 'result':
-        iconData = Icons.notifications;
-        color = Colors.orange;
-        break;
-      default:
-        iconData = Icons.error;
-        color = Colors.grey;
-    }
-
-    return Icon(iconData, color: color);
+                  return FinanceNoti(
+                    jobID: post["jobID"],
+                    uid: post["employerUID"],
+                    clicked: post["clicked"],
+                    postID: post.id,
+                    salarys: post['salary'],
+                  );
+                }),
+          );
+        } else if (snapshot.hasError) {
+          return Center(
+            child: Text(snapshot.error.toString()),
+          );
+        }
+        return Center(
+          child: Text("Hiện chưa có thông báo"),
+        );
+      },
+    );
   }
 
-  String _formatTimestamp(DateTime timestamp) {
-    final now = DateTime.now();
-    final difference = now.difference(timestamp);
-
-    if (difference.inDays > 0) {
-      return '${difference.inDays} ngày trước';
-    } else if (difference.inHours > 0) {
-      return '${difference.inHours} giờ trước';
-    } else if (difference.inMinutes > 0) {
-      return '${difference.inMinutes} phút trước';
-    } else {
-      return 'Vừa xong';
-    }
+  StreamBuilder<QuerySnapshot<Map<String, dynamic>>> _buildFeedbackEnroll() {
+    return StreamBuilder(
+      stream: FirebaseFirestore.instance
+          .collection("notifications")
+          .where("type", isEqualTo: "feedback_noti")
+          .orderBy("timestamp", descending: true)
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.hasData && snapshot.data!.docs.isNotEmpty) {
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 15),
+            child: ListView.builder(
+                itemCount: snapshot.data!.docs.length,
+                itemBuilder: (context, index) {
+                  final post = snapshot.data!.docs[index];
+                  return post['candidateID'] ==
+                          FirebaseAuth.instance.currentUser!.uid
+                      ? post['category'] == "feedback"
+                          ? FeedbackNoti(
+                              jobID: post["jobID"],
+                              uid: post["employerUID"],
+                              clicked: post["clicked"],
+                              postID: post.id,
+                            )
+                          : SizedBox.shrink()
+                      : post['employerUID'] ==
+                              FirebaseAuth.instance.currentUser!.uid
+                          ? post['category'] == "request"
+                              ? RequestFeedbackNoti(
+                                  jobID: post["jobID"],
+                                  uid: post["candidateID"],
+                                  clicked: post["clicked"],
+                                  postID: post.id,
+                                )
+                              : SizedBox.shrink()
+                          : SizedBox.shrink();
+                }),
+          );
+        } else if (snapshot.hasError) {
+          return Center(
+            child: Text(snapshot.error.toString()),
+          );
+        }
+        return Center(
+          child: Text("Hiện chưa có đánh giá nào"),
+        );
+      },
+    );
   }
 }

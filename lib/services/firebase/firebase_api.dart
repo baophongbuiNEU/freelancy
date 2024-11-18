@@ -14,7 +14,7 @@ class FirebaseApi {
     final fCMToken = await _firebaseMessaging.getToken();
 
     //print the token (normally you would send this to your server)
-    print("Token: $fCMToken");
+    // print("Token: $fCMToken");
     //initialize futher settings for push notifications
     initNotification();
   }
@@ -52,6 +52,4 @@ class FirebaseApi {
     importance: Importance.defaultImportance,
   );
   final _localNotifications = FlutterLocalNotificationsPlugin();
-
-  
 }

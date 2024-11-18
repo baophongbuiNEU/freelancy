@@ -1,8 +1,10 @@
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:freelancer/components/chat_bubble.dart';
 import 'package:freelancer/services/auth/auth_service.dart';
 import 'package:freelancer/services/chat/chat_service.dart';
+
 
 class ChatPage extends StatefulWidget {
   final String receiverEmail;

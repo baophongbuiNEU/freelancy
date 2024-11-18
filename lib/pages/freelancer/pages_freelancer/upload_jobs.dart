@@ -1,16 +1,15 @@
 import 'dart:io';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_datetime_picker_plus/flutter_datetime_picker_plus.dart';
 import 'package:freelancer/services/auth/auth_service.dart';
 import 'package:intl/intl.dart';
 
 class UploadJobs extends StatefulWidget {
-  UploadJobs({super.key, required this.gallery});
-  bool gallery;
+  const UploadJobs({
+    super.key,
+  });
   @override
   State<UploadJobs> createState() => _UploadJobsState();
 }
@@ -30,14 +29,12 @@ class _UploadJobsState extends State<UploadJobs> {
   String position = "";
   List<String> enrolls = [];
   List<String> accepted = [];
+  int _numberOfCandidates = 0;
 
   @override
   void initState() {
     super.initState();
     _fetchUserData();
-    if (widget.gallery != true) {
-      // _pickImage();
-    } else {}
   }
 
   Future<void> _fetchUserData() async {
@@ -85,56 +82,28 @@ class _UploadJobsState extends State<UploadJobs> {
         final avatar = doc['avatar'] ?? "";
         String jobID = FirebaseFirestore.instance.collection("jobs").doc().id;
 
-        if (_pickedImage != null) {
-          // Upload the image to Firebase Storage
-          final ref = FirebaseStorage.instance.ref().child(
-              'posts/${user.uid}/${DateTime.now().millisecondsSinceEpoch}.jpg');
+        // Add the post with the image URL to Firestore
+        FirebaseFirestore.instance.collection("jobs").doc(jobID).set({
+          'uid': user.uid,
+          'description': _descriptionController.text,
+          'title': _titleController.text,
+          'enroll_end_time': Timestamp.fromDate(_endDate!),
+          'location': _locationController.text.isEmpty
+              ? "Online"
+              : _locationController.text,
+          'requirement': _requirementController.text,
+          'salary': _salaryController.text,
+          'skills': _skillsController.text,
+          'experience': _experienceLevel,
+          'happening_time': Timestamp.fromDate(_happeningDate!),
+          'category': _role,
+          'timestamp': Timestamp.now(),
+          'jobID': jobID,
+          'enrolls': enrolls,
+          'accepted': accepted,
+          'numberCandidates': _numberOfCandidates,
+        });
 
-          final uploadTask = ref.putFile(_pickedImage!);
-          final imageUrl =
-              await uploadTask.then((value) => value.ref.getDownloadURL());
-
-          // Add the post with the image URL to Firestore
-          FirebaseFirestore.instance.collection("jobs").doc(jobID).set({
-            'uid': user.uid,
-            'description': _descriptionController.text,
-            'title': _titleController.text,
-            'enroll_start_time': Timestamp.fromDate(_startDate!),
-            'enroll_end_time': Timestamp.fromDate(_endDate!),
-            'location': _locationController.text,
-            'requirement': _requirementController.text,
-            'salary': _salaryController.text,
-            'skills': _skillsController.text,
-            'experience': _experienceLevel,
-            'happening_time': Timestamp.fromDate(_happeningDate!),
-            'image': imageUrl, // Add the image URL to the post
-            'category': _role,
-            'timestamp': Timestamp.now(),
-            'jobID': jobID,
-            'enrolls': enrolls,
-            'accepted': accepted,
-          });
-        } else {
-          // Add the post without an image to Firestore
-          FirebaseFirestore.instance.collection("jobs").doc(jobID).set({
-            'uid': user.uid,
-            'description': _descriptionController.text,
-            'title': _titleController.text,
-            'enroll_start_time': Timestamp.fromDate(_startDate!),
-            'enroll_end_time': Timestamp.fromDate(_endDate!),
-            'location': _locationController.text,
-            'requirement': _requirementController.text,
-            'salary': _salaryController.text,
-            'skills': _skillsController.text,
-            'experience': _experienceLevel,
-            'happening_time': Timestamp.fromDate(_happeningDate!),
-            'category': _role,
-            'timestamp': Timestamp.now(),
-            'jobID': jobID,
-            'enrolls': enrolls,
-            'accepted': accepted,
-          });
-        }
         Navigator.pop(context);
         showDialog(
           context: context,
@@ -153,7 +122,6 @@ class _UploadJobsState extends State<UploadJobs> {
                     Navigator.pop(context);
                     Navigator.pop(context);
                     Navigator.pop(context);
-                    
                   },
                 ),
               ],
@@ -338,126 +306,93 @@ class _UploadJobsState extends State<UploadJobs> {
                   },
                 ),
                 SizedBox(height: 16),
-                Text('Thời gian tuyển dụng',
-                    style: TextStyle(color: Colors.black, fontSize: 16)),
-                SizedBox(height: 5),
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextFormField(
-                        decoration: InputDecoration(
-                          labelText: 'Ngày bắt đầu',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(5),
-                            borderSide:
-                                BorderSide(color: Colors.grey, width: 1.5),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(5),
-                            borderSide: BorderSide(
-                                color: Color.fromRGBO(67, 101, 222, 1),
-                                width: 1.5),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(5),
-                            borderSide:
-                                BorderSide(color: Colors.grey, width: 1.5),
-                          ),
-                          floatingLabelStyle:
-                              TextStyle(color: Color.fromRGBO(67, 101, 222, 1)),
-                        ),
-                        readOnly: true,
-                        controller: TextEditingController(
-                          text: _startDate != null
-                              ? DateFormat('dd/MM/yyyy HH:mm')
-                                  .format(_startDate!)
-                              : '',
-                        ),
-                        onTap: () async {
-                          final picked = await DatePicker.showDateTimePicker(
-                            context,
-                            showTitleActions: true,
-                            minTime: DateTime.now(),
-                            maxTime: DateTime.now().add(Duration(days: 365)),
-                            onChanged: (date) {
-                              setState(() => _startDate = date);
-                            },
-                            onConfirm: (date) {
-                              setState(() => _startDate = date);
-                            },
-                          );
-                          if (picked != null) {
-                            setState(() => _startDate = picked);
-                          }
-                        },
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Vui lòng nhập ngày bắt đầu';
-                          }
-                          return null;
-                        },
-                      ),
+                TextFormField(
+                  decoration: InputDecoration(
+                    labelText: 'Số lượng ứng viên',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(5),
+                      borderSide: BorderSide(color: Colors.grey, width: 1.5),
                     ),
-                    SizedBox(width: 16),
-                    Expanded(
-                      child: TextFormField(
-                        decoration: InputDecoration(
-                          labelText: 'Ngày kết thúc',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(5),
-                            borderSide:
-                                BorderSide(color: Colors.grey, width: 1.5),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(5),
-                            borderSide: BorderSide(
-                                color: Color.fromRGBO(67, 101, 222, 1),
-                                width: 1.5),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(5),
-                            borderSide:
-                                BorderSide(color: Colors.grey, width: 1.5),
-                          ),
-                          floatingLabelStyle:
-                              TextStyle(color: Color.fromRGBO(67, 101, 222, 1)),
-                        ),
-                        readOnly: true,
-                        controller: TextEditingController(
-                          text: _endDate != null
-                              ? DateFormat('dd/MM/yyyy HH:mm').format(_endDate!)
-                              : '',
-                        ),
-                        onTap: () async {
-                          final picked = await DatePicker.showDateTimePicker(
-                            context,
-                            showTitleActions: true,
-                            minTime: _startDate,
-                            maxTime: DateTime.now().add(Duration(days: 365)),
-                            onChanged: (date) {
-                              setState(() => _endDate = date);
-                            },
-                            onConfirm: (date) {
-                              setState(() => _endDate = date);
-                            },
-                          );
-                          if (picked != null) setState(() => _endDate = picked);
-                        },
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Vui lòng nhập ngày kết thúc';
-                          }
-                          return null;
-                        },
-                      ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(5),
+                      borderSide: BorderSide(
+                          color: Color.fromRGBO(67, 101, 222, 1), width: 1.5),
                     ),
-                  ],
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(5),
+                      borderSide: BorderSide(color: Colors.grey, width: 1.5),
+                    ),
+                    floatingLabelStyle:
+                        TextStyle(color: Color.fromRGBO(67, 101, 222, 1)),
+                  ),
+                  keyboardType: TextInputType.number,
+                  onChanged: (value) {
+                    setState(() {
+                      _numberOfCandidates = int.parse(value);
+                    });
+                  },
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Vui lòng nhập số lượng ứng viên';
+                    } else if (int.parse(value) < 1) {
+                      return 'Số lượng ứng viên phải là số nguyên lớn hơn 0';
+                    }
+                    return null;
+                  },
+                ),
+                SizedBox(height: 10),
+                TextFormField(
+                  decoration: InputDecoration(
+                    labelText: 'Hạn tuyển dụng',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(5),
+                      borderSide: BorderSide(color: Colors.grey, width: 1.5),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(5),
+                      borderSide: BorderSide(
+                          color: Color.fromRGBO(67, 101, 222, 1), width: 1.5),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(5),
+                      borderSide: BorderSide(color: Colors.grey, width: 1.5),
+                    ),
+                    floatingLabelStyle:
+                        TextStyle(color: Color.fromRGBO(67, 101, 222, 1)),
+                  ),
+                  readOnly: true,
+                  controller: TextEditingController(
+                    text: _endDate != null
+                        ? DateFormat('dd/MM/yyyy HH:mm').format(_endDate!)
+                        : '',
+                  ),
+                  onTap: () async {
+                    final picked = await DatePicker.showDateTimePicker(
+                      context,
+                      showTitleActions: true,
+                      minTime: DateTime.now(),
+                      maxTime: DateTime.now().add(Duration(days: 365)),
+                      onChanged: (date) {
+                        setState(() => _endDate = date);
+                      },
+                      onConfirm: (date) {
+                        setState(() => _endDate = date);
+                      },
+                    );
+                    if (picked != null) setState(() => _endDate = picked);
+                  },
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Vui lòng nhập hạn tuyển dụng';
+                    }
+                    return null;
+                  },
                 ),
                 SizedBox(height: 16),
                 TextFormField(
                   controller: _locationController,
                   decoration: InputDecoration(
-                    labelText: 'Địa điểm làm việc',
+                    labelText: 'Địa điểm làm việc (Không bắt buộc)',
                     hintText: 'Ví dụ: Hà Nội',
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(5),
@@ -479,18 +414,20 @@ class _UploadJobsState extends State<UploadJobs> {
                       color: Color.fromRGBO(67, 101, 222, 1),
                     ),
                   ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Vui lòng nhập địa điểm làm việc';
-                    }
-                    return null;
-                  },
+                  // validator: (value) {
+                  //   if (value == null || value.isEmpty) {
+                  //     return _locationController.text = 'Online';
+                  //   }
+                  //   return null;
+                  // },
                 ),
                 SizedBox(height: 16),
                 TextFormField(
                   controller: _salaryController,
                   decoration: InputDecoration(
                     labelText: 'Mức lương',
+                    suffixIcon: Icon(Icons.attach_money),
+                    suffixIconColor: Color.fromRGBO(67, 101, 222, 1),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(5),
                       borderSide: BorderSide(color: Colors.grey, width: 1.5),
@@ -561,7 +498,7 @@ class _UploadJobsState extends State<UploadJobs> {
                 TextFormField(
                   controller: _skillsController,
                   decoration: InputDecoration(
-                    labelText: 'Yêu cầu ứng viên',
+                    labelText: 'Yêu cầu',
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(5),
                       borderSide: BorderSide(color: Colors.grey, width: 1.5),
@@ -620,7 +557,7 @@ class _UploadJobsState extends State<UploadJobs> {
                     final picked = await DatePicker.showDateTimePicker(
                       context,
                       showTitleActions: true,
-                      minTime: _startDate,
+                      minTime: DateTime.now(),
                       maxTime: DateTime.now().add(Duration(days: 365)),
                       onChanged: (date) {
                         setState(() => _happeningDate = date);
@@ -634,6 +571,9 @@ class _UploadJobsState extends State<UploadJobs> {
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Vui lòng nhập ngày diễn ra công việc';
+                    }
+                    if (_happeningDate!.isBefore(_endDate!)) {
+                      return 'Ngày diễn ra phải sau hạn tuyển dụng';
                     }
                     return null;
                   },

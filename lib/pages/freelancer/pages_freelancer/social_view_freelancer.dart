@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -6,6 +7,7 @@ import 'package:freelancer/components/user_post_compo.dart';
 import 'package:freelancer/pages/freelancer/pages_freelancer/upload_jobs.dart';
 import 'package:freelancer/pages/freelancer/pages_freelancer/upload_post.dart';
 import 'package:freelancer/services/auth/auth_service.dart';
+
 
 class SocialViewFreelancer extends StatefulWidget {
   const SocialViewFreelancer({super.key});
@@ -29,14 +31,24 @@ class _SocialViewFreelancerState extends State<SocialViewFreelancer>
   String avatar = "";
   String message = "";
   String position = "";
-  bool fillter = true;
+  bool jobFillter = true;
+  bool candidateFillter = true;
+  bool shareFillter = true;
+
+  @override
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
     _searchController.addListener(_onSearchChanged);
     _fetchUserData();
+    _refreshFuture = _loadData();
   }
+
+  // void changeFillter(bool newFillter) {
+  //   fillter = newFillter;
+  //   _filterController.add(fillter);
+  // }
 
   Future<void> _fetchUserData() async {
     final user = FirebaseAuth.instance.currentUser;
@@ -92,21 +104,63 @@ class _SocialViewFreelancerState extends State<SocialViewFreelancer>
     }
   }
 
+  late Future<void> _refreshFuture;
+
+  Future<void> _loadData() async {
+    await Future.delayed(Duration(seconds: 0)); // Simulating data load
+  }
+
+  void _refreshPage() {
+    setState(() {
+      _refreshFuture = _loadData(); // Set new future to refresh content
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    void onSortSelected(String value) {
+    void sortJob(String value) {
       switch (value) {
         case 'new_to_old':
-          fillter = true;
+          jobFillter = true;
+
+          _refreshPage();
           break;
 
         case 'old_to_new':
-          fillter = false;
+          jobFillter = false;
+          _refreshPage();
           break;
       }
+    }
 
-      // Trigger a rebuild of the _buildPostListJob widget
-      setState(() {});
+    void sortCandidate(String value) {
+      switch (value) {
+        case 'new_to_old':
+          candidateFillter = true;
+
+          _refreshPage();
+          break;
+
+        case 'old_to_new':
+          candidateFillter = false;
+          _refreshPage();
+          break;
+      }
+    }
+
+    void sortShare(String value) {
+      switch (value) {
+        case 'new_to_old':
+          shareFillter = true;
+
+          _refreshPage();
+          break;
+
+        case 'old_to_new':
+          shareFillter = false;
+          _refreshPage();
+          break;
+      }
     }
 
     return Scaffold(
@@ -118,106 +172,382 @@ class _SocialViewFreelancerState extends State<SocialViewFreelancer>
           'Khám phá',
         ),
         elevation: 0,
-        actions: [
-          // PopupMenuButton<String>(
-          //   onSelected: (value) => onSortSelected(value),
-          //   itemBuilder: (context) => [
-          //     PopupMenuItem<String>(
-          //       value: 'new_to_old',
-          //       child: Text('Mới đến cũ'),
-          //     ),
-          //     PopupMenuItem<String>(
-          //       value: 'old_to_new',
-          //       child: Text('Cũ đến mới'),
-          //     ),
-          //   ],
-          // ),
-          IconButton(
-            icon: Icon(Icons.filter_list, color: Colors.black),
-            onPressed: () {
-              // Implement filter functionality
-            },
-          ),
-        ],
       ),
-      body: Column(
-        children: [
-          // Padding(
-          //   padding: const EdgeInsets.all(16.0),
-          //   child: TextField(
-          //     controller: _searchController,
-          //     decoration: InputDecoration(
-          //       hintText: 'Tìm kiếm công việc, ứng viên, công ty...',
-          //       prefixIcon: Icon(Icons.search),
-          //       border: OutlineInputBorder(
-          //         borderRadius: BorderRadius.circular(30),
-          //         borderSide: BorderSide.none,
-          //       ),
-          //       filled: true,
-          //       fillColor: Colors.white,
-          //     ),
-          //   ),
-          // ),
-          Padding(
-            padding: const EdgeInsets.only(left: 15, right: 15),
-            child: Container(
-              padding: EdgeInsets.all(16),
-              decoration: BoxDecoration(boxShadow: [
-                BoxShadow(
-                  color: Colors.grey.withOpacity(0.3),
-                  spreadRadius: 2,
-                  blurRadius: 3,
-                  offset: Offset(0, 2),
-                ),
-              ], color: Colors.white, borderRadius: BorderRadius.circular(12)),
-              child: Column(
-                children: [
-                  Row(
+      body: FutureBuilder<void>(
+        future: _refreshFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          }
+          return Column(
+            children: [
+              // Padding(
+              //   padding: const EdgeInsets.all(16.0),
+              //   child: TextField(
+              //     controller: _searchController,
+              //     decoration: InputDecoration(
+              //       hintText: 'Tìm kiếm công việc, ứng viên, công ty...',
+              //       prefixIcon: Icon(Icons.search),
+              //       border: OutlineInputBorder(
+              //         borderRadius: BorderRadius.circular(30),
+              //         borderSide: BorderSide.none,
+              //       ),
+              //       filled: true,
+              //       fillColor: Colors.white,
+              //     ),
+              //   ),
+              // ),
+              Padding(
+                padding: const EdgeInsets.only(left: 15, right: 15),
+                child: Container(
+                  padding: EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.3),
+                          spreadRadius: 2,
+                          blurRadius: 3,
+                          offset: Offset(0, 2),
+                        ),
+                      ],
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12)),
+                  child: Column(
                     children: [
-                      CircleAvatar(
-                        radius: 20,
-                        backgroundImage: NetworkImage(avatar),
+                      Row(
+                        children: [
+                          CircleAvatar(
+                            radius: 20,
+                            backgroundImage: NetworkImage(avatar),
+                          ),
+                          SizedBox(width: 12),
+                          _uploadNewPost(context),
+                        ],
                       ),
-                      SizedBox(width: 12),
-                      _uploadNewPost(context),
                     ],
                   ),
-                ],
+                ),
               ),
-            ),
-          ),
 
-          SizedBox(
-            height: 15,
-          ),
-          TabBar(
-            controller: _tabController,
-            tabs: const [
-              Tab(text: 'Việc làm'),
-              Tab(text: 'Ứng viên'),
-              Tab(text: 'Chia sẻ'),
+              SizedBox(
+                height: 15,
+              ),
+              TabBar(
+                controller: _tabController,
+                tabs: const [
+                  Tab(text: 'Việc làm'),
+                  Tab(text: 'Ứng viên'),
+                  Tab(text: 'Chia sẻ'),
+                ],
+                labelColor: Color.fromRGBO(67, 101, 222, 1),
+                labelStyle: TextStyle(
+                  fontSize: 16,
+                ),
+                unselectedLabelColor: Colors.grey,
+                indicatorSize: TabBarIndicatorSize.label,
+                indicatorColor: Color.fromRGBO(67, 101, 222, 1),
+              ),
+              SizedBox(height: 10),
+              Expanded(
+                child: TabBarView(
+                  controller: _tabController,
+                  children: [
+                    Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(right: 20),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Text(
+                                "Sắp xếp theo",
+                                style: TextStyle(
+                                  color: Color.fromRGBO(67, 101, 222, 1),
+                                ),
+                              ),
+                              SizedBox(
+                                width: 0,
+                              ),
+                              PopupMenuButton<String>(
+                                color: Colors.white,
+                                icon: Icon(
+                                  Icons.filter_list,
+                                  color: Color.fromRGBO(67, 101, 222, 1),
+                                ),
+                                onSelected: (value) => sortJob(value),
+                                itemBuilder: (context) => [
+                                  PopupMenuItem<String>(
+                                    value: 'new_to_old',
+                                    child: Text('Mới đến cũ'),
+                                  ),
+                                  PopupMenuItem<String>(
+                                    value: 'old_to_new',
+                                    child: Text('Cũ đến mới'),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        Expanded(child: _buildPostListJob()),
+                      ],
+                    ),
+                    Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(right: 20),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Text(
+                                "Sắp xếp theo",
+                                style: TextStyle(
+                                  color: Color.fromRGBO(67, 101, 222, 1),
+                                ),
+                              ),
+                              SizedBox(
+                                width: 0,
+                              ),
+                              PopupMenuButton<String>(
+                                color: Colors.white,
+                                icon: Icon(
+                                  Icons.filter_list,
+                                  color: Color.fromRGBO(67, 101, 222, 1),
+                                ),
+                                onSelected: (value) => sortCandidate(value),
+                                itemBuilder: (context) => [
+                                  PopupMenuItem<String>(
+                                    value: 'new_to_old',
+                                    child: Text('Mới đến cũ'),
+                                  ),
+                                  PopupMenuItem<String>(
+                                    value: 'old_to_new',
+                                    child: Text('Cũ đến mới'),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        Expanded(child: _buildPostListCandidate()),
+                      ],
+                    ),
+                    Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(right: 20),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Text(
+                                "Sắp xếp theo",
+                                style: TextStyle(
+                                  color: Color.fromRGBO(67, 101, 222, 1),
+                                ),
+                              ),
+                              SizedBox(
+                                width: 0,
+                              ),
+                              PopupMenuButton<String>(
+                                color: Colors.white,
+                                icon: Icon(
+                                  Icons.filter_list,
+                                  color: Color.fromRGBO(67, 101, 222, 1),
+                                ),
+                                onSelected: (value) => sortShare(value),
+                                itemBuilder: (context) => [
+                                  PopupMenuItem<String>(
+                                    value: 'new_to_old',
+                                    child: Text('Mới đến cũ'),
+                                  ),
+                                  PopupMenuItem<String>(
+                                    value: 'old_to_new',
+                                    child: Text('Cũ đến mới'),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        Expanded(child: _buildPostListShare()),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
             ],
-            labelColor: Color.fromRGBO(67, 101, 222, 1),
-            labelStyle: TextStyle(
-              fontSize: 16,
-            ),
-            unselectedLabelColor: Colors.grey,
-            indicatorSize: TabBarIndicatorSize.label,
-            indicatorColor: Color.fromRGBO(67, 101, 222, 1),
-          ),
-          SizedBox(height: 10),
-          Expanded(
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                _buildPostListJob(),
-                _buildPostListCandidate(),
-                _buildPostListShare()
-              ],
-            ),
-          ),
-        ],
+          );
+        },
       ),
+    );
+  }
+
+  StreamBuilder<QuerySnapshot<Map<String, dynamic>>> _buildPostListJob() {
+    return StreamBuilder(
+      stream: FirebaseFirestore.instance
+          .collection("jobs")
+          .where('category', isNotEqualTo: 'Done')
+          .where('enroll_end_time', isGreaterThan: Timestamp.now())
+          .orderBy("timestamp", descending: jobFillter)
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          final docs = snapshot.data!.docs;
+
+          if (docs.isEmpty) {
+            return Center(
+              child: Text('Hiện chưa có công việc nào'),
+            );
+          }
+
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 15),
+            child: ListView.builder(
+              physics: ClampingScrollPhysics(),
+              itemCount: docs.length,
+              itemBuilder: (context, index) {
+                final post = docs[index];
+                final jobID = post["jobID"];
+
+                // Check if the job still exists
+                if (jobID != null) {
+                  return JobList(
+                    key: ValueKey(jobID), // Add a unique key for each job item
+                    jobID: jobID,
+                  );
+                } else {
+                  return SizedBox.shrink(); // Placeholder for non-existent job
+                }
+              },
+            ),
+          );
+        } else if (snapshot.hasError) {
+          return Center(
+            child: Text(snapshot.error.toString()),
+          );
+        }
+        return Center(
+          heightFactor: 10,
+          widthFactor: 10,
+          child: const CircularProgressIndicator(
+            color: Colors.blue,
+          ),
+        );
+      },
+    );
+  }
+
+  StreamBuilder<QuerySnapshot<Map<String, dynamic>>> _buildPostListCandidate() {
+    return StreamBuilder(
+      stream: FirebaseFirestore.instance
+          .collection("posts")
+          .where('category', isEqualTo: 'Ứng viên')
+          .orderBy("timestamp", descending: candidateFillter)
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          final docs = snapshot.data!.docs;
+
+          if (docs.isEmpty) {
+            return Center(
+              child: Text('Hiện bạn chưa có bài viết gì'),
+            );
+          }
+
+          return ListView.builder(
+            itemCount: docs.length,
+            physics: ClampingScrollPhysics(),
+            itemBuilder: (context, index) {
+              final post = docs[index];
+              final postId = post.id;
+
+              // Check if post exists before rendering
+              if (post.exists) {
+                return UserPostCompo(
+                  key: ValueKey(postId), // Unique key for each post
+                  content: post["content"],
+                  uid: post["uid"],
+                  image: post["image"],
+                  timestamp: post["timestamp"],
+                  postId: postId,
+                  likes: List<String>.from(post["likes"] ?? []),
+                );
+              } else {
+                return SizedBox.shrink(); // Placeholder for non-existent post
+              }
+            },
+          );
+        } else if (snapshot.hasError) {
+          return Center(
+            child: Text("Error"),
+          );
+        }
+        return Center(
+          heightFactor: 10,
+          widthFactor: 10,
+          child: const CircularProgressIndicator(
+            color: Colors.blue,
+          ),
+        );
+      },
+    );
+  }
+
+  StreamBuilder<QuerySnapshot<Map<String, dynamic>>> _buildPostListShare() {
+    return StreamBuilder(
+      stream: FirebaseFirestore.instance
+          .collection("posts")
+          .where('category', isEqualTo: 'Chia sẻ')
+          .orderBy("timestamp", descending: shareFillter)
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          final docs = snapshot.data!.docs;
+
+          if (docs.isEmpty) {
+            return Center(
+              child: Text('Hiện bạn chưa có bài viết gì'),
+            );
+          }
+
+          return ListView.builder(
+            itemCount: docs.length,
+            itemBuilder: (context, index) {
+              final post = docs[index];
+              final postId = post.id;
+
+              // Check if post exists before rendering
+              if (post.exists) {
+                return UserPostCompo(
+                  key: ValueKey(postId), // Unique key for each post
+                  content: post["content"],
+                  uid: post["uid"],
+                  image: post["image"],
+                  timestamp: post["timestamp"],
+                  postId: postId,
+                  likes: List<String>.from(post["likes"] ?? []),
+                );
+              } else {
+                return SizedBox.shrink(); // Placeholder for non-existent post
+              }
+            },
+          );
+        } else if (snapshot.hasError) {
+          return Center(
+            child: Text("Error"),
+          );
+        }
+        return Center(
+          heightFactor: 10,
+          widthFactor: 10,
+          child: const CircularProgressIndicator(
+            color: Colors.blue,
+          ),
+        );
+      },
     );
   }
 
@@ -250,11 +580,15 @@ class _SocialViewFreelancerState extends State<SocialViewFreelancer>
                         child: Column(
                           children: [
                             GestureDetector(
-                              onTap: () => Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) =>
-                                          UploadJobs(gallery: false))),
+                              onTap: () async {
+                                Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) => UploadJobs()))
+                                    .then((_) {
+                                  _refreshPage();
+                                });
+                              },
                               child: Container(
                                   padding: EdgeInsets.symmetric(
                                       vertical: 20, horizontal: 25),
@@ -269,25 +603,31 @@ class _SocialViewFreelancerState extends State<SocialViewFreelancer>
                                     crossAxisAlignment:
                                         CrossAxisAlignment.center,
                                     children: [
-                                      Icon(Icons.work_outline),
+                                      Expanded(
+                                          flex: 0,
+                                          child: Icon(Icons.work_outline)),
                                       SizedBox(
                                         width: 10,
                                       ),
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            'Việc làm',
-                                            style: TextStyle(fontSize: 17),
-                                          ),
-                                          Text(
-                                            "Đăng tin tuyển dụng cho công việc của bạn",
-                                            style: TextStyle(
-                                                color: Colors.grey[600],
-                                                fontSize: 15),
-                                          )
-                                        ],
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              'Việc làm',
+                                              overflow: TextOverflow.ellipsis,
+                                              style: TextStyle(fontSize: 17),
+                                            ),
+                                            Text(
+                                              "Đăng tin tuyển dụng cho công việc của bạn",
+                                              overflow: TextOverflow.ellipsis,
+                                              style: TextStyle(
+                                                  color: Colors.grey[600],
+                                                  fontSize: 15),
+                                            )
+                                          ],
+                                        ),
                                       ),
                                     ],
                                   )),
@@ -302,7 +642,9 @@ class _SocialViewFreelancerState extends State<SocialViewFreelancer>
                                       builder: (context) => UploadPost(
                                             gallery: true,
                                             selectedRole: "Ứng viên",
-                                          ))),
+                                          ))).then((_) {
+                                _refreshPage();
+                              }),
                               child: Container(
                                   padding: EdgeInsets.symmetric(
                                       vertical: 20, horizontal: 25),
@@ -317,26 +659,32 @@ class _SocialViewFreelancerState extends State<SocialViewFreelancer>
                                     crossAxisAlignment:
                                         CrossAxisAlignment.center,
                                     children: [
-                                      Icon(Icons.person_outline),
+                                      Expanded(
+                                          flex: 0,
+                                          child: Icon(Icons.person_outline)),
                                       SizedBox(
                                         width: 10,
                                       ),
-                                      Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            'Giới thiệu Ứng viên',
-                                            style: TextStyle(fontSize: 17),
-                                          ),
-                                          Text(
-                                            "Đăng hồ sơ của bạn",
-                                            style: TextStyle(
-                                                color: Colors.grey[600],
-                                                fontSize: 15),
-                                          ),
-                                        ],
+                                      Expanded(
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              'Giới thiệu Ứng viên',
+                                              overflow: TextOverflow.ellipsis,
+                                              style: TextStyle(fontSize: 17),
+                                            ),
+                                            Text(
+                                              "Đăng hồ sơ của bạn",
+                                              overflow: TextOverflow.ellipsis,
+                                              style: TextStyle(
+                                                  color: Colors.grey[600],
+                                                  fontSize: 15),
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                     ],
                                   )),
@@ -351,7 +699,9 @@ class _SocialViewFreelancerState extends State<SocialViewFreelancer>
                                       builder: (context) => UploadPost(
                                             gallery: true,
                                             selectedRole: "Chia sẻ",
-                                          ))),
+                                          ))).then((_) {
+                                _refreshPage();
+                              }),
                               child: Container(
                                   padding: EdgeInsets.symmetric(
                                       vertical: 20, horizontal: 25),
@@ -366,25 +716,31 @@ class _SocialViewFreelancerState extends State<SocialViewFreelancer>
                                     crossAxisAlignment:
                                         CrossAxisAlignment.center,
                                     children: [
-                                      Icon(Icons.book_outlined),
+                                      Expanded(
+                                          flex: 0,
+                                          child: Icon(Icons.book_outlined)),
                                       SizedBox(
                                         width: 10,
                                       ),
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            'Chia sẻ',
-                                            style: TextStyle(fontSize: 17),
-                                          ),
-                                          Text(
-                                            "Đăng kiến thức, kinh nghiệm, trải nghiệm",
-                                            style: TextStyle(
-                                                color: Colors.grey[600],
-                                                fontSize: 15),
-                                          )
-                                        ],
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              'Chia sẻ',
+                                              overflow: TextOverflow.ellipsis,
+                                              style: TextStyle(fontSize: 17),
+                                            ),
+                                            Text(
+                                              "Đăng kiến thức, kinh nghiệm, trải nghiệm",
+                                              overflow: TextOverflow.ellipsis,
+                                              style: TextStyle(
+                                                  color: Colors.grey[600],
+                                                  fontSize: 15),
+                                            )
+                                          ],
+                                        ),
                                       ),
                                     ],
                                   )),
@@ -415,138 +771,6 @@ class _SocialViewFreelancerState extends State<SocialViewFreelancer>
           ],
         ),
       ),
-    );
-  }
-
-  StreamBuilder<QuerySnapshot<Map<String, dynamic>>> _buildPostListJob() {
-    return StreamBuilder(
-      stream: FirebaseFirestore.instance
-          .collection("jobs")
-          .orderBy("timestamp", descending: fillter)
-          .snapshots(),
-      builder: (context, snapshot) {
-        if (snapshot.hasData) {
-          return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 15),
-            child: ListView.builder(
-                itemCount: snapshot.data!.docs.length,
-                itemBuilder: (context, index) {
-                  final post = snapshot.data!.docs[index];
-                  if (post["uid"] == user?.uid) {}
-                  return JobList(
-                    experience: post["experience"],
-                    description: post["description"],
-                    enroll_end_time: post["enroll_end_time"],
-                    enroll_start_time: post["enroll_start_time"],
-                    happeningTime: post["happening_time"],
-                    location: post["location"],
-                    requirement: post["requirement"],
-                    salary: post["salary"],
-                    skills: post["skills"],
-                    title: post["title"],
-                    category: post["category"],
-                    uid: post["uid"],
-                    timestamp: post["timestamp"],
-                    jobID: post["jobID"],
-                    enrolls: List<String>.from(
-                      post["enrolls"] ?? [],
-                    ),
-                    accepted: List<String>.from(
-                      post["accepted"] ?? [],
-                    ),
-                  );
-                }),
-          );
-        } else if (snapshot.hasError) {
-          return Center(
-            child: Text(snapshot.error.toString()),
-          );
-        }
-        return Center(
-            heightFactor: 10,
-            widthFactor: 10,
-            child: const CircularProgressIndicator(
-              color: Colors.blue,
-            ));
-      },
-    );
-  }
-
-  StreamBuilder<QuerySnapshot<Map<String, dynamic>>> _buildPostListCandidate() {
-    return StreamBuilder(
-      stream: FirebaseFirestore.instance
-          .collection("posts")
-          .where('category', isEqualTo: 'Ứng viên')
-          .orderBy("timestamp", descending: true)
-          .snapshots(),
-      builder: (context, snapshot) {
-        if (snapshot.hasData) {
-          return ListView.builder(
-              itemCount: snapshot.data!.docs.length,
-              itemBuilder: (context, index) {
-                final post = snapshot.data!.docs[index];
-                return UserPostCompo(
-                    content: post["content"],
-                    uid: post["uid"],
-                    image: post["image"],
-                    timestamp: post["timestamp"],
-                    postId: post.id,
-                    likes: List<String>.from(
-                      post["likes"] ?? [],
-                    )
-                    // Pass the post ID
-                    );
-              });
-        } else if (snapshot.hasError) {
-          return Center(
-            child: Text("Error"),
-          );
-        }
-        return Center(
-            heightFactor: 10,
-            widthFactor: 10,
-            child: const CircularProgressIndicator(
-              color: Colors.blue,
-            ));
-      },
-    );
-  }
-
-  StreamBuilder<QuerySnapshot<Map<String, dynamic>>> _buildPostListShare() {
-    return StreamBuilder(
-      stream: FirebaseFirestore.instance
-          .collection("posts")
-          .where('category', isEqualTo: 'Chia sẻ')
-          .orderBy("timestamp", descending: true)
-          .snapshots(),
-      builder: (context, snapshot) {
-        if (snapshot.hasData) {
-          return ListView.builder(
-              itemCount: snapshot.data!.docs.length,
-              itemBuilder: (context, index) {
-                final post = snapshot.data!.docs[index];
-                return UserPostCompo(
-                  content: post["content"],
-                  uid: post["uid"],
-                  image: post["image"],
-                  timestamp: post["timestamp"],
-                  postId: post.id,
-                  likes: List<String>.from(post["likes"] ?? []),
-                  // Pass the post ID
-                );
-              });
-        } else if (snapshot.hasError) {
-          return Center(
-            child: Text("Error"),
-          );
-        }
-        return Center(
-            heightFactor: 10,
-            widthFactor: 10,
-            child: const CircularProgressIndicator(
-              color: Colors.blue,
-            ));
-      },
     );
   }
 }

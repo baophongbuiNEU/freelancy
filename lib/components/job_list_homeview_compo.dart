@@ -15,6 +15,8 @@ class _JobListHomeviewCompoState extends State<JobListHomeviewCompo> {
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance
           .collection('jobs')
+          .where("category", isNotEqualTo: "Done")
+          .where('enroll_end_time', isGreaterThan: Timestamp.now())
           .orderBy("timestamp", descending: true)
           .limit(2)
           .snapshots(),
@@ -23,31 +25,14 @@ class _JobListHomeviewCompoState extends State<JobListHomeviewCompo> {
           return Padding(
             padding: const EdgeInsets.only(top: 10),
             child: ListView.builder(
-              shrinkWrap: true, // Set shrinkWrap to true
-              physics: NeverScrollableScrollPhysics(), // Disable scrolling
+              shrinkWrap: true,
+              physics: ClampingScrollPhysics(),
               itemCount: snapshot.data!.docs.length,
               itemBuilder: (context, index) {
                 final post = snapshot.data!.docs[index];
                 return JobList(
-                  experience: post["experience"],
-                  description: post["description"],
-                  enroll_end_time: post["enroll_end_time"],
-                  enroll_start_time: post["enroll_start_time"],
-                  happeningTime: post["happening_time"],
-                  location: post["location"],
-                  requirement: post["requirement"],
-                  salary: post["salary"],
-                  skills: post["skills"],
-                  title: post["title"],
-                  category: post["category"],
-                  uid: post["uid"],
-                  timestamp: post["timestamp"],
                   jobID: post["jobID"],
-                  enrolls: List<String>.from(
-                      post["enrolls"] ?? [],
-                ),accepted: List<String>.from(
-                            post["accepted"] ?? [],
-                          ),);
+                );
               },
             ),
           );

@@ -21,36 +21,34 @@ class ChatService {
     return FirebaseFirestore.instance
         .collection('chat_rooms')
         .where('participantsList', arrayContains: _auth.currentUser!.uid)
+        .orderBy('lastMessageTimestamp', descending: true)
         .snapshots();
   }
 
-  //send message
   Future<void> sendMessageOld(String receiverID, String message) async {
-    //get current user info
     final String currentUserID = _auth.currentUser!.uid;
     final String currentUserEmail = _auth.currentUser!.email!;
     List<String> participantsList = [currentUserID, receiverID];
     final Timestamp timestamp = Timestamp.now();
 
-    // create a new message
     Message newMessage = Message(
-        senderID: currentUserID,
-        senderEmail: currentUserEmail,
-        receiverID: receiverID,
-        message: message,
-        timestamp: timestamp,
-        participantsList: participantsList);
+      senderID: currentUserID,
+      senderEmail: currentUserEmail,
+      receiverID: receiverID,
+      message: message,
+      timestamp: timestamp,
+      participantsList: participantsList,
+    );
 
-    //construct chat room ID for the 2 users (sorted to ensure uniqueness)
     participantsList.sort();
     String chatRoomID = participantsList.join('_');
 
-    //add participantsList to the chat room document
     await _firestore.collection("chat_rooms").doc(chatRoomID).set({
       "participantsList": participantsList,
+      "lastMessage": message, // Ensure this is a String
+      "lastMessageTimestamp": timestamp,
     }, SetOptions(merge: true));
 
-    //add new message to the messages collection
     await _firestore
         .collection("chat_rooms")
         .doc(chatRoomID)

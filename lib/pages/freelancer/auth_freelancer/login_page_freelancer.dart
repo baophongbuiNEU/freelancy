@@ -1,11 +1,13 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, use_build_context_synchronously
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:freelancer/services/auth/auth_service.dart';
 import 'package:freelancer/components/my_button.dart';
 import 'package:freelancer/components/password_field.dart';
+import 'package:freelancer/components/square_tile.dart';
 import 'package:freelancer/components/text_field_circle.dart';
 import 'package:freelancer/pages/freelancer/pages_freelancer/home_page_freelancer.dart';
+import 'package:freelancer/services/auth/auth_service.dart';
 
 class Login extends StatelessWidget {
   final TextEditingController _emailController = TextEditingController();
@@ -38,7 +40,7 @@ class Login extends StatelessWidget {
   }
 
   void login(BuildContext context) async {
-    //circle
+    // Show loading indicator
     showDialog(
       context: context,
       builder: (context) {
@@ -47,39 +49,67 @@ class Login extends StatelessWidget {
         );
       },
     );
-    //auth service
+
+    // Initialize AuthService
     final authService = AuthService();
 
-    //try login
+    // Try to log in
     try {
-      await authService.signInWithEmailPassword(
+      // Attempt to authenticate with Firebase
+      final userCredential = await authService.signInWithEmailPassword(
         _emailController.text,
         _passwordController.text,
       );
-      Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Đăng nhập thành công!."),
-        ),
-      );
-      // Navigator.pushReplacement(context,
-      //     MaterialPageRoute(builder: (context) => HomePageFreelancer()));
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (context) => HomePageFreelancer()),
-        (route) => false,
-      );
-    }
 
-    //catch any errors
-    catch (e) {
+      // Get the user ID of the authenticated user
+      String userId = userCredential.user!.uid;
+
+      // Check if the user exists in the 'users' collection
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .get();
+
+      if (userDoc.exists) {
+        // Close loading indicator
+        Navigator.pop(context);
+
+        // Show success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Đăng nhập thành công!"),
+          ),
+        );
+
+        // Navigate to the home page
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => HomePageFreelancer()),
+          (route) => false,
+        );
+      } else {
+        // Close loading indicator
+        Navigator.pop(context);
+
+        // Show error message
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text("Lỗi đăng nhập"),
+            content: Text("Tài khoản không tồn tại trong hệ thống."),
+          ),
+        );
+      }
+    } catch (e) {
+      // Close loading indicator if login fails
       Navigator.pop(context);
+
+      // Show error message
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          title: Text(
-            e.toString(),
-          ),
+          title: Text("Lỗi đăng nhập"),
+          content: Text(e.toString()),
         ),
       );
     }
@@ -148,58 +178,58 @@ class Login extends StatelessWidget {
                   const SizedBox(
                     height: 25,
                   ),
-                  // Row(
-                  //   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  //   children: [
-                  //     Expanded(
-                  //       child: Divider(
-                  //         color: Colors.grey,
-                  //         height: 0,
-                  //         thickness: 0.5,
-                  //         endIndent: 15,
-                  //       ),
-                  //     ),
-                  //     Text(
-                  //       "Hoặc đăng nhập bằng",
-                  //       style: TextStyle(fontSize: 17, color: Colors.grey[800]),
-                  //     ),
-                  //     Expanded(
-                  //       child: Divider(
-                  //         color: Colors.grey,
-                  //         height: 0,
-                  //         thickness: 0.5,
-                  //         indent: 15,
-                  //       ),
-                  //     ),
-                  //   ],
-                  // ),
-                  // const SizedBox(
-                  //   height: 20,
-                  // ),
-                  // Row(
-                  //   mainAxisAlignment: MainAxisAlignment.center,
-                  //   children: [
-                  //     SquareTile(
-                  //       imagePath: 'lib/images/facebook.webp',
-                  //       onTap: () {},
-                  //     ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Expanded(
+                        child: Divider(
+                          color: Colors.grey,
+                          height: 0,
+                          thickness: 0.5,
+                          endIndent: 15,
+                        ),
+                      ),
+                      Text(
+                        "Hoặc đăng nhập bằng",
+                        style: TextStyle(fontSize: 17, color: Colors.grey[800]),
+                      ),
+                      Expanded(
+                        child: Divider(
+                          color: Colors.grey,
+                          height: 0,
+                          thickness: 0.5,
+                          indent: 15,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(
+                    height: 20,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // SquareTile(
+                      //   imagePath: 'lib/images/facebook.webp',
+                      //   onTap: () {},
+                      // ),
 
-                  //     SizedBox(width: 25),
-                  //     // google button
-                  //     SquareTile(
-                  //       imagePath: 'lib/images/google.png',
-                  //       onTap: () => loginGoogle(context),
-                  //     ),
+                      SizedBox(width: 25),
+                      // google button
+                      SquareTile(
+                        imagePath: 'lib/images/google.png',
+                        onTap: () => loginGoogle(context),
+                      ),
 
-                  //     SizedBox(width: 25),
+                      SizedBox(width: 25),
 
-                  //     // apple button
-                  //     SquareTile(
-                  //       imagePath: 'lib/images/apple.png',
-                  //       onTap: () {},
-                  //     )
-                  //   ],
-                  // ),
+                      // apple button
+                      // SquareTile(
+                      //   imagePath: 'lib/images/apple.png',
+                      //   onTap: () {},
+                      // )
+                    ],
+                  ),
                   const SizedBox(
                     height: 20,
                   ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+
 class ImageViewer extends StatelessWidget {
   const ImageViewer({super.key, required this.image});
   final String? image;
@@ -8,6 +9,7 @@ class ImageViewer extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: GestureDetector(
+        onLongPress: () {},
         onTap: () => Navigator.pop(context),
         child: InteractiveViewer(
           child: Image.network(

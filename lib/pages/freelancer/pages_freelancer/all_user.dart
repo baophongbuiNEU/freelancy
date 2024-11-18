@@ -1,3 +1,4 @@
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -6,6 +7,7 @@ import 'package:freelancer/pages/freelancer/pages_freelancer/chat_page.dart';
 import 'package:freelancer/pages/freelancer/pages_freelancer/other_user_profile_page.dart';
 import 'package:freelancer/services/auth/auth_service.dart';
 import 'package:freelancer/services/chat/chat_service.dart';
+
 
 class AllUser extends StatefulWidget {
   const AllUser({super.key});

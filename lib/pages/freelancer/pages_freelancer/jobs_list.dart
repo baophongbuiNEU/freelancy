@@ -33,6 +33,12 @@ class _JobListPageState extends State<JobListPage> {
             .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.hasData) {
+            if (snapshot.data!.docs.isEmpty) {
+              return Center(
+                child: Text(
+                    'Hiện chưa có công việc gì đối với lĩnh vực ${widget.categoryTitle}'),
+              );
+            }
             return Padding(
               padding: const EdgeInsets.only(top: 10, left: 15, right: 15),
               child: ListView.builder(
@@ -40,25 +46,7 @@ class _JobListPageState extends State<JobListPage> {
                   itemBuilder: (context, index) {
                     final post = snapshot.data!.docs[index];
                     return JobList(
-                      experience: post["experience"],
-                      description: post["description"],
-                      enroll_end_time: post["enroll_end_time"],
-                      enroll_start_time: post["enroll_start_time"],
-                      happeningTime: post["happening_time"],
-                      location: post["location"],
-                      requirement: post["requirement"],
-                      salary: post["salary"],
-                      skills: post["skills"],
-                      title: post["title"],
-                      category: post["category"],
-                      uid: post["uid"],
-                      timestamp: post["timestamp"],
                       jobID: post["jobID"],
-                      enrolls: List<String>.from(
-                      post["enrolls"] ?? [],
-                    ), accepted: List<String>.from(
-                            post["accepted"] ?? [],
-                          ),
                     );
                   }),
             );

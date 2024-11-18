@@ -1,12 +1,13 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, prefer_final_fields
 
-import 'package:flutter/material.dart';
 
+import 'package:flutter/material.dart';
 import 'package:freelancer/pages/freelancer/pages_freelancer/account_page_freelancer.dart';
 import 'package:freelancer/pages/freelancer/pages_freelancer/home_view_freelancer.dart';
 import 'package:freelancer/pages/freelancer/pages_freelancer/message_view_freelancer.dart';
-import 'package:freelancer/pages/freelancer/pages_freelancer/project_view_freelancer.dart';
 import 'package:freelancer/pages/freelancer/pages_freelancer/social_view_freelancer.dart';
+
+
 
 class HomePageFreelancer extends StatefulWidget {
   const HomePageFreelancer({super.key});
@@ -21,7 +22,7 @@ class _HomePageFreelancerState extends State<HomePageFreelancer> {
     HomeViewFreelancer(),
     MessageViewFreelancer(),
     SocialViewFreelancer(),
-    ProjectViewFreelancer(),
+    // ProjectViewFreelancer(),
     AccountPageFreelancer(),
   ];
 
@@ -84,15 +85,15 @@ class _HomePageFreelancerState extends State<HomePageFreelancer> {
                 ),
               ),
               label: 'Khám phá'),
-          BottomNavigationBarItem(
-            icon: Padding(
-              padding: const EdgeInsets.only(bottom: 5),
-              child: Icon(
-                Icons.work,
-              ),
-            ),
-            label: 'Dự án',
-          ),
+          // BottomNavigationBarItem(
+          //   icon: Padding(
+          //     padding: const EdgeInsets.only(bottom: 5),
+          //     child: Icon(
+          //       Icons.work,
+          //     ),
+          //   ),
+          //   label: 'Dự án',
+          // ),
           BottomNavigationBarItem(
             icon: Padding(
               padding: const EdgeInsets.only(bottom: 5),

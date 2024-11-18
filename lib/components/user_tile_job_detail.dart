@@ -59,7 +59,9 @@ class _UserTileJobDetailState extends State<UserTileJobDetail> {
       context: context,
       builder: (context) {
         return Center(
-          child: CircularProgressIndicator(),
+          child: CircularProgressIndicator(
+            color: Color.fromRGBO(67, 101, 222, 1),
+          ),
         );
       },
     );
@@ -101,6 +103,18 @@ class _UserTileJobDetailState extends State<UserTileJobDetail> {
             ]),
           });
           text = rejected;
+          DocumentReference notificationRef = FirebaseFirestore.instance
+              .collection("notifications")
+              .doc(); // Generate a unique document ID
+
+          notificationRef.set({
+            'clicked': false,
+            'type': 'result_noti',
+            'jobID': widget.jobID,
+            'candidateID': widget.uid, // Assuming widget.uid is the sender's ID
+            'employerUID': FirebaseAuth.instance.currentUser!.uid,
+            'timestamp': Timestamp.now(),
+          });
         }
       }
 
@@ -109,12 +123,37 @@ class _UserTileJobDetailState extends State<UserTileJobDetail> {
 
         Navigator.pop(context);
         isAccepted = !isAccepted;
-        Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (context) => ConfirmationPageEmployer(
-                  jobID: widget.jobID, uid: widget.uid),
-            ));
+
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text('Thành công'),
+            content: Text(
+              'Đã chấp nhận ứng viên ${widget.userName}',
+              style: TextStyle(fontSize: 16),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ConfirmationPageEmployer(
+                            jobID: widget.jobID, uid: widget.uid),
+                      ));
+                },
+                child: Text(
+                  'Đi tới trang xác nhận',
+                  style: TextStyle(
+                      color: Color.fromRGBO(67, 101, 222, 1),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16),
+                ),
+              ),
+            ],
+          ),
+        );
       });
     } catch (e) {
       // Handle error
@@ -199,44 +238,57 @@ class _UserTileJobDetailState extends State<UserTileJobDetail> {
         ),
         child: Row(
           children: [
-            SizedBox(
-              width: 60,
-              height: 60,
-              child: CircleAvatar(
-                backgroundImage: NetworkImage(
-                  widget.avatar,
+            Expanded(
+              flex: 0,
+              child: SizedBox(
+                width: 60,
+                height: 60,
+                child: CircleAvatar(
+                  backgroundImage: NetworkImage(
+                    widget.avatar,
+                  ),
                 ),
               ),
             ),
             SizedBox(
               width: 15,
             ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  widget.userName,
-                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
-                ),
-                Text(
-                  widget.email,
-                  style: TextStyle(fontSize: 15),
-                ),
-              ],
+            Expanded(
+              flex: 1,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    widget.userName,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+                  ),
+                  Text(
+                    "Ấn vào để xem hồ sơ",
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 15, color: Colors.grey),
+                  ),
+                ],
+              ),
             ),
-            Spacer(),
-            GestureDetector(
-              onTap: toggleAccept,
-              child: Container(
-                padding: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(100),
-                  color: Color.fromRGBO(67, 101, 222, 1),
-                ),
-                child: Text(
-                  // isAccepted ? "Đã được nhận" : "Chấp nhận",
-                  text,
-                  style: TextStyle(color: Colors.white, fontSize: 16),
+            // Spacer(),
+            Expanded(
+              flex: 0,
+              child: GestureDetector(
+                onTap: toggleAccept,
+                child: Container(
+                  padding: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(100),
+                    color: Color.fromRGBO(67, 101, 222, 1),
+                  ),
+                  child: Text(
+                    // isAccepted ? "Đã được nhận" : "Chấp nhận",
+                    text,
+                    overflow: TextOverflow.ellipsis,
+
+                    style: TextStyle(color: Colors.white, fontSize: 16),
+                  ),
                 ),
               ),
             ),

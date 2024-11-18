@@ -1,7 +1,11 @@
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:freelancer/components/enroll_button.dart';
+import 'package:freelancer/pages/freelancer/pages_freelancer/confirmation_page_freelancer.dart';
+import 'package:freelancer/pages/freelancer/pages_freelancer/other_user_profile_page.dart';
+
 import 'package:intl/intl.dart';
 
 class OtherUserJobDetails extends StatefulWidget {
@@ -22,6 +26,7 @@ class OtherUserJobDetails extends StatefulWidget {
 class _OtherUserJobDetailsState extends State<OtherUserJobDetails> {
   bool isEnrolled = false;
   bool isLoading = false;
+  bool isAccepted = false;
 
   void toggleEnroll() async {
     setState(() {
@@ -68,6 +73,20 @@ class _OtherUserJobDetailsState extends State<OtherUserJobDetails> {
                         FirebaseAuth.instance.currentUser?.uid)
                     .toList()),
           });
+          // notificationRef.delete();
+          // Delete notification
+          QuerySnapshot notificationSnapshot = await FirebaseFirestore.instance
+              .collection("notifications")
+              .where('jobID', isEqualTo: widget.jobID)
+              .where('candidateID',
+                  isEqualTo: FirebaseAuth.instance.currentUser!.uid)
+              .where('employerUID', isEqualTo: widget.uid)
+              .where('type', isEqualTo: 'enroll_noti')
+              .get();
+
+          if (notificationSnapshot.docs.isNotEmpty) {
+            notificationSnapshot.docs.first.reference.delete();
+          }
         } else {
           postRef.update({
             'enrolls':
@@ -78,6 +97,17 @@ class _OtherUserJobDetailsState extends State<OtherUserJobDetails> {
                 'timestamp': Timestamp.now(),
               }
             ]),
+          });
+          DocumentReference notificationRef = FirebaseFirestore.instance
+              .collection("notifications")
+              .doc(); // Generate a unique document ID
+          notificationRef.set({
+            'clicked': false,
+            'type': 'enroll_noti',
+            'jobID': widget.jobID,
+            'candidateID': FirebaseAuth.instance.currentUser!.uid,
+            'employerUID': widget.uid,
+            'timestamp': Timestamp.now(),
           });
         }
       }
@@ -118,6 +148,8 @@ class _OtherUserJobDetailsState extends State<OtherUserJobDetails> {
                     final jobDetails = snapshot.data!.data();
                     isEnrolled = jobDetails!['enrolls']
                         .contains(FirebaseAuth.instance.currentUser?.uid);
+                    isAccepted = jobDetails['accepted']
+                        .contains(FirebaseAuth.instance.currentUser?.uid);
 
                     // Format upload time and enrollment end time
                     final uploadTime = DateFormat('dd/MM/yyyy HH:mm')
@@ -131,6 +163,7 @@ class _OtherUserJobDetailsState extends State<OtherUserJobDetails> {
                         jobDetails['enroll_end_time'].toDate().toString());
 
                     bool isEnrollmentEnded = endDate.isBefore(currentDate);
+                    bool isDone = jobDetails['category'] == "Done";
 
                     return Scaffold(
                       backgroundColor: Color.fromRGBO(250, 250, 250, 1),
@@ -159,39 +192,70 @@ class _OtherUserJobDetailsState extends State<OtherUserJobDetails> {
                                         fontSize: 24),
                                   ),
                                   SizedBox(height: 5),
-                                  Row(
-                                    children: [
-                                      Container(
-                                        height: 30,
-                                        width: 30,
-                                        decoration: BoxDecoration(
-                                          borderRadius:
-                                              BorderRadius.circular(200),
-                                          image: DecorationImage(
-                                            image: NetworkImage(
-                                              user!["avatar"],
+                                  GestureDetector(
+                                    onTap: () => Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              OtherUserProfilePage(
+                                                  userId: widget.uid!),
+                                        )),
+                                    child: Row(
+                                      children: [
+                                        Container(
+                                          height: 30,
+                                          width: 30,
+                                          decoration: BoxDecoration(
+                                            borderRadius:
+                                                BorderRadius.circular(200),
+                                            image: DecorationImage(
+                                              image: NetworkImage(
+                                                user!["avatar"],
+                                              ),
+                                              fit: BoxFit.cover,
                                             ),
-                                            fit: BoxFit.cover,
                                           ),
                                         ),
-                                      ),
-                                      SizedBox(width: 10),
-                                      Text(
-                                        user["name"],
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.normal,
-                                            fontSize: 16),
-                                      ),
-                                    ],
+                                        SizedBox(width: 10),
+                                        Text(
+                                          user["name"],
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.normal,
+                                              fontSize: 16),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                   SizedBox(height: 12),
-                                  isEnrollmentEnded == true
-                                      ? isEnrolled
-                                          ? EnrollButton(
-                                              onTap: toggleEnroll,
-                                              isEnrolled: isEnrolled,
-                                            )
-                                          : Container(
+                                  isAccepted == true
+                                      ? GestureDetector(
+                                          onTap: () => Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) =>
+                                                    ConfirmationPageFreelancer(
+                                                        jobID: widget.jobID,
+                                                        uid: widget.uid),
+                                              )),
+                                          child: Container(
+                                            margin: EdgeInsets.only(right: 10),
+                                            padding: EdgeInsets.symmetric(
+                                                vertical: 10, horizontal: 25),
+                                            decoration: BoxDecoration(
+                                                color: Colors.green,
+                                                borderRadius:
+                                                    BorderRadius.circular(5)),
+                                            child: Text(
+                                              "Xem chi tiết",
+                                              style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.w500,
+                                                  fontSize: 16),
+                                            ),
+                                          ),
+                                        )
+                                      : isDone == true
+                                          ? Container(
                                               margin:
                                                   EdgeInsets.only(right: 10),
                                               padding: EdgeInsets.symmetric(
@@ -201,17 +265,44 @@ class _OtherUserJobDetailsState extends State<OtherUserJobDetails> {
                                                   borderRadius:
                                                       BorderRadius.circular(5)),
                                               child: Text(
-                                                "Đã hết thời hạn ứng tuyển",
+                                                "Công việc đã hoàn thành",
                                                 style: TextStyle(
                                                     color: Colors.white,
                                                     fontWeight: FontWeight.w500,
                                                     fontSize: 16),
                                               ),
                                             )
-                                      : EnrollButton(
-                                          onTap: toggleEnroll,
-                                          isEnrolled: isEnrolled,
-                                        ),
+                                          : isEnrollmentEnded == true
+                                              ? isEnrolled
+                                                  ? EnrollButton(
+                                                      onTap: toggleEnroll,
+                                                      isEnrolled: isEnrolled,
+                                                    )
+                                                  : Container(
+                                                      margin: EdgeInsets.only(
+                                                          right: 10),
+                                                      padding:
+                                                          EdgeInsets.symmetric(
+                                                              vertical: 10,
+                                                              horizontal: 25),
+                                                      decoration: BoxDecoration(
+                                                          color: Colors.red,
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(5)),
+                                                      child: Text(
+                                                        "Đã hết thời hạn ứng tuyển",
+                                                        style: TextStyle(
+                                                            color: Colors.white,
+                                                            fontWeight:
+                                                                FontWeight.w500,
+                                                            fontSize: 16),
+                                                      ),
+                                                    )
+                                              : EnrollButton(
+                                                  onTap: toggleEnroll,
+                                                  isEnrolled: isEnrolled,
+                                                ),
                                   SizedBox(height: 30),
                                   Text(
                                     "Thông tin chi tiết",
@@ -233,10 +324,11 @@ class _OtherUserJobDetailsState extends State<OtherUserJobDetails> {
                                         SizedBox(width: 8),
                                         Expanded(
                                           child: Text(
-                                            int.parse(jobDetails['salary']) >
-                                                    1000
-                                                ? "${(int.parse(jobDetails['salary']) / 1000).toStringAsFixed(3)} VNĐ"
-                                                : "${jobDetails['salary']} VNĐ",
+                                            NumberFormat.currency(
+                                                    locale: 'vi_VN',
+                                                    symbol: 'đ')
+                                                .format(num.parse(
+                                                    jobDetails['salary'])),
                                             overflow: TextOverflow.ellipsis,
                                             style: TextStyle(fontSize: 16),
                                           ),
@@ -244,8 +336,19 @@ class _OtherUserJobDetailsState extends State<OtherUserJobDetails> {
                                       ],
                                     ),
                                   ),
-                                  _buildInfoRow(
-                                      Icons.work, jobDetails['experience']!),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: _buildInfoRow(Icons.work,
+                                            jobDetails['experience']!),
+                                      ),
+                                      Expanded(
+                                        child: _buildInfoRow(
+                                            Icons.person,
+                                            "Số lượng tuyển: ${jobDetails['numberCandidates']}"),
+                                      ),
+                                    ],
+                                  ),
                                   Row(
                                     children: [
                                       Expanded(
@@ -264,24 +367,47 @@ class _OtherUserJobDetailsState extends State<OtherUserJobDetails> {
                                   // SizedBox(height: 16),
                                   // _buildDateInfo(jobDetails['postedDate']!, jobDetails['applicationDeadline']!),
                                   // SizedBox(height: 24),
-                                  SizedBox(height: 30),
+                                  SizedBox(height: 20),
 
                                   _buildSection('Mô tả công việc',
                                       jobDetails['description']!),
-
-                                  SizedBox(height: 24),
+                                  SizedBox(height: 15),
+                                  _buildSection(
+                                      'Yêu cầu', jobDetails['skills']!),
                                 ],
                               ),
                             ),
                             SizedBox(height: 24),
                             Center(
-                              child: isEnrollmentEnded == true
-                                  ? isEnrolled
-                                      ? EnrollButton(
-                                          onTap: toggleEnroll,
-                                          isEnrolled: isEnrolled,
-                                        )
-                                      : Container(
+                              child: isAccepted == true
+                                  ? GestureDetector(
+                                      onTap: () => Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                ConfirmationPageFreelancer(
+                                                    jobID: widget.jobID,
+                                                    uid: widget.uid),
+                                          )),
+                                      child: Container(
+                                        margin: EdgeInsets.only(right: 10),
+                                        padding: EdgeInsets.symmetric(
+                                            vertical: 10, horizontal: 25),
+                                        decoration: BoxDecoration(
+                                            color: Colors.green,
+                                            borderRadius:
+                                                BorderRadius.circular(5)),
+                                        child: Text(
+                                          "Xem chi tiết",
+                                          style: TextStyle(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.w500,
+                                              fontSize: 16),
+                                        ),
+                                      ),
+                                    )
+                                  : isDone == true
+                                      ? Container(
                                           margin: EdgeInsets.only(right: 10),
                                           padding: EdgeInsets.symmetric(
                                               vertical: 10, horizontal: 25),
@@ -290,17 +416,46 @@ class _OtherUserJobDetailsState extends State<OtherUserJobDetails> {
                                               borderRadius:
                                                   BorderRadius.circular(5)),
                                           child: Text(
-                                            "Đã hết thời hạn ứng tuyển",
+                                            "Công việc đã hoàn thành",
                                             style: TextStyle(
                                                 color: Colors.white,
                                                 fontWeight: FontWeight.w500,
                                                 fontSize: 16),
                                           ),
                                         )
-                                  : EnrollButton(
-                                      onTap: toggleEnroll,
-                                      isEnrolled: isEnrolled,
-                                    ),
+                                      : isEnrollmentEnded == true
+                                          ? isEnrolled
+                                              ? EnrollButton(
+                                                  onTap: toggleEnroll,
+                                                  isEnrolled: isEnrolled,
+                                                )
+                                              : Container(
+                                                  margin: EdgeInsets.only(
+                                                      right: 10),
+                                                  padding: EdgeInsets.symmetric(
+                                                      vertical: 10,
+                                                      horizontal: 25),
+                                                  decoration: BoxDecoration(
+                                                      color: Colors.red,
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              5)),
+                                                  child: Text(
+                                                    "Đã hết thời hạn ứng tuyển",
+                                                    style: TextStyle(
+                                                        color: Colors.white,
+                                                        fontWeight:
+                                                            FontWeight.w500,
+                                                        fontSize: 16),
+                                                  ),
+                                                )
+                                          : EnrollButton(
+                                              onTap: toggleEnroll,
+                                              isEnrolled: isEnrolled,
+                                            ),
+                            ),
+                            SizedBox(
+                              height: 20,
                             ),
                           ],
                         ),

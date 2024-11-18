@@ -4,18 +4,19 @@ import 'package:flutter/material.dart';
 import 'package:freelancer/components/user_tile_job_confirm.dart';
 import 'package:freelancer/components/user_tile_job_detail.dart';
 import 'package:freelancer/pages/freelancer/pages_freelancer/other_user_profile_page.dart';
+
 import 'package:intl/intl.dart';
 
 class JobDetails extends StatefulWidget {
   final String? jobID;
-  final String? uid;
+  // final String? uid;
   final List<String> enrolls;
   final List<String> accepted;
 
   const JobDetails(
       {super.key,
       required this.jobID,
-      required this.uid,
+      // required this.uid,
       required this.enrolls,
       required this.accepted});
 
@@ -26,6 +27,27 @@ class JobDetails extends StatefulWidget {
 class _JobDetailsState extends State<JobDetails> {
   bool isAccepted = false;
   bool isLoading = false;
+  Future<void> _deleteJob() async {
+    // Delete the job document
+    await FirebaseFirestore.instance
+        .collection('jobs')
+        .doc(widget.jobID)
+        .delete();
+  }
+
+  Future<void> _deleteNotification() async {
+    final jobID = widget.jobID;
+
+    await FirebaseFirestore.instance
+        .collection('notifications')
+        .where('jobID', isEqualTo: jobID)
+        .get()
+        .then((querySnapshot) {
+      for (var doc in querySnapshot.docs) {
+        doc.reference.delete();
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -37,19 +59,19 @@ class _JobDetailsState extends State<JobDetails> {
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.active) {
           if (snapshot.hasData) {
+            final jobDetails = snapshot.data!.data();
+
             return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
               stream: FirebaseFirestore.instance
                   .collection('users')
-                  .doc(widget.uid)
+                  .doc(jobDetails!['uid'])
                   .snapshots(),
               builder: (context, userSnapshot) {
                 if (userSnapshot.connectionState == ConnectionState.active) {
                   if (userSnapshot.hasData) {
                     final user = userSnapshot.data!.data();
 
-                    final jobDetails = snapshot.data!.data();
-
-                    isAccepted = jobDetails!['accepted']
+                    isAccepted = jobDetails['accepted']
                         .contains(FirebaseAuth.instance.currentUser?.uid);
 
                     // Format upload time and enrollment end time
@@ -72,11 +94,8 @@ class _JobDetailsState extends State<JobDetails> {
                             child: PopupMenuButton<String>(
                               color: Colors.white,
                               onSelected: (value) {
-                                // Delete the post
-                                FirebaseFirestore.instance
-                                    .collection('jobs')
-                                    .doc(widget.jobID)
-                                    .delete();
+                                _deleteJob();
+                                _deleteNotification();
                                 Navigator.pop(context);
                               },
                               itemBuilder: (context) => [
@@ -157,10 +176,11 @@ class _JobDetailsState extends State<JobDetails> {
                                         SizedBox(width: 8),
                                         Expanded(
                                           child: Text(
-                                            int.parse(jobDetails['salary']) >
-                                                    1000
-                                                ? "${(int.parse(jobDetails['salary']) / 1000).toStringAsFixed(3)} VNĐ"
-                                                : "${jobDetails['salary']} VNĐ",
+                                            NumberFormat.currency(
+                                                    locale: 'vi_VN',
+                                                    symbol: 'đ')
+                                                .format(num.parse(
+                                                    jobDetails['salary'])),
                                             overflow: TextOverflow.ellipsis,
                                             style: TextStyle(fontSize: 16),
                                           ),
@@ -168,8 +188,18 @@ class _JobDetailsState extends State<JobDetails> {
                                       ],
                                     ),
                                   ),
-                                  _buildInfoRow(
-                                      Icons.work, jobDetails['experience']!),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: _buildInfoRow(Icons.work,
+                                            jobDetails['experience']!),
+                                      ),
+                                      Expanded(
+                                        child: _buildInfoRow(Icons.person,
+                                            "Số lượng tuyển: ${jobDetails['numberCandidates']}"),
+                                      ),
+                                    ],
+                                  ),
                                   Row(
                                     children: [
                                       Expanded(
@@ -200,9 +230,11 @@ class _JobDetailsState extends State<JobDetails> {
                                   fontWeight: FontWeight.bold, fontSize: 20),
                             ),
                             _buildSection(
+                                jobDetails['numberCandidates'],
                                 jobDetails['description']!,
                                 enrolledUsers: jobDetails['enrolls'],
-                                jobDetails['accepted'].contains(widget.uid)),
+                                jobDetails['accepted']
+                                    .contains(jobDetails['uid'])),
                           ],
                         ),
                       ),
@@ -212,7 +244,11 @@ class _JobDetailsState extends State<JobDetails> {
                         child: Text('Không tìm thấy thông tin người dùng'));
                   }
                 } else {
-                  return Center(child: CircularProgressIndicator());
+                  return Center(
+                    child: CircularProgressIndicator(
+                      color: Color.fromRGBO(67, 101, 222, 1),
+                    ),
+                  );
                 }
               },
             );
@@ -220,7 +256,11 @@ class _JobDetailsState extends State<JobDetails> {
             return Center(child: Text('Không tìm thấy chi tiết công việc'));
           }
         } else {
-          return Center(child: CircularProgressIndicator());
+          return Center(
+            child: CircularProgressIndicator(
+              color: Color.fromRGBO(67, 101, 222, 1),
+            ),
+          );
         }
       },
     );
@@ -321,6 +361,7 @@ class _JobDetailsState extends State<JobDetails> {
   // }
 
   Widget _buildSection(
+    int numberCandidates,
     String content,
     bool isAccepted, {
     List<dynamic>? enrolledUsers,
@@ -329,7 +370,146 @@ class _JobDetailsState extends State<JobDetails> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SizedBox(height: 8),
-        if (widget.accepted.isNotEmpty)
+        if (widget.accepted.isNotEmpty &&
+            widget.accepted.length < numberCandidates) ...[
+          // StreamBuilder for Accepted Users
+          StreamBuilder<List<Map<String, dynamic>>>(
+            stream: _fetchAcceptedUsersStream(widget.accepted),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Center(
+                  child: CircularProgressIndicator(
+                    color: Color.fromRGBO(67, 101, 222, 1),
+                  ),
+                );
+              } else if (snapshot.hasError) {
+                return Text('Error: ${snapshot.error}');
+              } else if (snapshot.hasData && snapshot.data!.isEmpty) {
+                return Center(
+                  child: Text(
+                    "Hiện chưa có ai chấp nhận!",
+                    style:
+                        TextStyle(fontWeight: FontWeight.normal, fontSize: 18),
+                  ),
+                );
+              } else {
+                int remainCadidate = numberCandidates - widget.accepted.length;
+
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 15),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            "Đã chấp nhận",
+                            style: TextStyle(
+                                fontSize: 18, fontWeight: FontWeight.bold),
+                          ),
+                          remainCadidate == 0
+                              ? Text("")
+                              : Text(
+                                  "Cần $remainCadidate ứng viên nữa",
+                                  style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.normal),
+                                ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(height: 5), // Spacer between sections
+
+                    ...snapshot.data!.map((user) => Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 15),
+                          child: UserTileJobConfirm(
+                            onTap: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    OtherUserProfilePage(userId: user["uid"]),
+                              ),
+                            ),
+                            userName: user["name"],
+                            avatar: user["avatar"],
+                            email: user["email"],
+                            jobID: widget.jobID,
+                            uid: user["uid"],
+                            isAccepted: isAccepted,
+                            accepts: List<String>.from(widget.accepted ?? []),
+                          ),
+                        )),
+                  ],
+                );
+              }
+            },
+          ),
+          // StreamBuilder for Enrolled Users (excluding accepted users)
+          StreamBuilder<List<Map<String, dynamic>>>(
+            stream: _fetchEnrolledUsersStream(enrolledUsers!),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Center(
+                  child: CircularProgressIndicator(
+                    color: Color.fromRGBO(67, 101, 222, 1),
+                  ),
+                );
+              } else if (snapshot.hasError) {
+                return Text('Error: ${snapshot.error}');
+              } else if (snapshot.hasData && snapshot.data!.isEmpty) {
+                return Center(
+                  child: Text(
+                    "Hiện chưa có ai ứng tuyển!",
+                    style:
+                        TextStyle(fontWeight: FontWeight.normal, fontSize: 18),
+                  ),
+                );
+              } else {
+                // Exclude accepted users from enrolled list
+                List<Map<String, dynamic>> filteredEnrolledUsers = snapshot
+                    .data!
+                    .where((user) => !widget.accepted.contains(user["uid"]))
+                    .toList();
+
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 15),
+                      child: Text(
+                        "Đã ứng tuyển",
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    SizedBox(height: 5), // Spacer between sections
+
+                    ...filteredEnrolledUsers.map((user) => Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 15),
+                          child: UserTileJobDetail(
+                            onTap: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    OtherUserProfilePage(userId: user["uid"]),
+                              ),
+                            ),
+                            userName: user["name"],
+                            avatar: user["avatar"],
+                            email: user["email"],
+                            jobID: widget.jobID,
+                            uid: user["uid"],
+                            isAccepted: isAccepted,
+                            accepts: List<String>.from(widget.accepted ?? []),
+                          ),
+                        )),
+                  ],
+                );
+              }
+            },
+          ),
+        ] else if (widget.accepted.isNotEmpty)
           StreamBuilder<List<Map<String, dynamic>>>(
             stream: _fetchAcceptedUsersStream(widget.accepted),
             builder: (context, snapshot) {
@@ -362,9 +542,8 @@ class _JobDetailsState extends State<JobDetails> {
                                 jobID: widget.jobID,
                                 uid: user["uid"],
                                 isAccepted: isAccepted,
-                                accepts: List<String>.from(
-                                  widget.accepted ?? [],
-                                ),
+                                accepts:
+                                    List<String>.from(widget.accepted ?? []),
                               ),
                             ))
                         .toList(),
@@ -373,7 +552,11 @@ class _JobDetailsState extends State<JobDetails> {
               } else if (snapshot.hasError) {
                 return Text('Error: ${snapshot.error}');
               } else {
-                return Center(child: CircularProgressIndicator());
+                return Center(
+                  child: CircularProgressIndicator(
+                    color: Color.fromRGBO(67, 101, 222, 1),
+                  ),
+                );
               }
             },
           )
@@ -385,7 +568,8 @@ class _JobDetailsState extends State<JobDetails> {
                 if (snapshot.data!.isEmpty) {
                   return Text(
                     "Hiện chưa có ai ứng tuyển!",
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                    style:
+                        TextStyle(fontWeight: FontWeight.normal, fontSize: 18),
                   );
                 } else {
                   return Column(
@@ -407,9 +591,8 @@ class _JobDetailsState extends State<JobDetails> {
                                 jobID: widget.jobID,
                                 uid: user["uid"],
                                 isAccepted: isAccepted,
-                                accepts: List<String>.from(
-                                  widget.accepted ?? [],
-                                ),
+                                accepts:
+                                    List<String>.from(widget.accepted ?? []),
                               ),
                             ))
                         .toList(),
@@ -418,7 +601,11 @@ class _JobDetailsState extends State<JobDetails> {
               } else if (snapshot.hasError) {
                 return Text('Error: ${snapshot.error}');
               } else {
-                return Center(child: CircularProgressIndicator());
+                return Center(
+                  child: CircularProgressIndicator(
+                    color: Color.fromRGBO(67, 101, 222, 1),
+                  ),
+                );
               }
             },
           ),

@@ -1,9 +1,9 @@
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:freelancer/components/project_enroll_job.dart';
 import 'package:freelancer/components/project_user_job.dart';
 import 'package:freelancer/services/auth/auth_service.dart';
-
 
 class ProjectViewFreelancer extends StatefulWidget {
   const ProjectViewFreelancer({super.key});
@@ -54,6 +54,7 @@ class _ProjectViewFreelancerState extends State<ProjectViewFreelancer>
             tabs: const [
               Tab(text: 'Công việc của tôi'),
               Tab(text: 'Công việc đã ứng tuyển'),
+              // Tab(text: 'Công việc đã hoàn thành'),
             ],
           ),
           SizedBox(height: 10),
@@ -63,6 +64,7 @@ class _ProjectViewFreelancerState extends State<ProjectViewFreelancer>
               children: [
                 _buildMyJob(),
                 _buildEnrollJob(),
+                // _buildDoneJob(),
                 // _buildJobList(myJobs, showStatus: true, showEnrolledCount: true),
                 // _buildJobList(enrolledJobs, showApplicationStatus: true),
               ],
@@ -82,6 +84,11 @@ class _ProjectViewFreelancerState extends State<ProjectViewFreelancer>
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.hasData) {
+          if (snapshot.data!.docs.isEmpty) {
+            return Center(
+              child: Text('Hiện bạn chưa đăng công việc gì'),
+            );
+          }
           return Padding(
             padding: const EdgeInsets.symmetric(horizontal: 15),
             child: ListView.builder(
@@ -92,7 +99,6 @@ class _ProjectViewFreelancerState extends State<ProjectViewFreelancer>
                     experience: post["experience"],
                     description: post["description"],
                     enroll_end_time: post["enroll_end_time"],
-                    enroll_start_time: post["enroll_start_time"],
                     happeningTime: post["happening_time"],
                     location: post["location"],
                     requirement: post["requirement"],
@@ -118,11 +124,9 @@ class _ProjectViewFreelancerState extends State<ProjectViewFreelancer>
           );
         }
         return Center(
-            heightFactor: 10,
-            widthFactor: 10,
-            child: const CircularProgressIndicator(
-              color: Colors.blue,
-            ));
+            child: CircularProgressIndicator(
+          color: Colors.blue,
+        ));
       },
     );
   }
@@ -132,10 +136,15 @@ class _ProjectViewFreelancerState extends State<ProjectViewFreelancer>
       stream: FirebaseFirestore.instance
           .collection("jobs")
           .where('enrolls', arrayContains: _authService.getCurrentUserID())
-          // .orderBy("timestamp", descending: true)
+          .orderBy("enroll_timestamps", descending: true)
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.hasData) {
+          if (snapshot.data!.docs.isEmpty) {
+            return Center(
+              child: Text('Hiện bạn chưa ứng tuyển công việc gì'),
+            );
+          }
           return Padding(
             padding: const EdgeInsets.symmetric(horizontal: 15),
             child: ListView.builder(
@@ -155,7 +164,6 @@ class _ProjectViewFreelancerState extends State<ProjectViewFreelancer>
                     experience: post["experience"],
                     description: post["description"],
                     enroll_end_time: post["enroll_end_time"],
-                    enroll_start_time: post["enroll_start_time"],
                     happeningTime: post["happening_time"],
                     location: post["location"],
                     requirement: post["requirement"],
@@ -182,11 +190,8 @@ class _ProjectViewFreelancerState extends State<ProjectViewFreelancer>
           );
         }
         return Center(
-            heightFactor: 10,
-            widthFactor: 10,
-            child: const CircularProgressIndicator(
-              color: Colors.blue,
-            ));
+          child: Text("Hiện chưa có thông báo"),
+        );
       },
     );
   }

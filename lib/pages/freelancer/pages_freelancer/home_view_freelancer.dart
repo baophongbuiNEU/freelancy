@@ -8,7 +8,8 @@ import 'package:freelancer/components/job_list_homeview_compo.dart';
 import 'package:freelancer/components/top_user.dart';
 import 'package:freelancer/pages/freelancer/pages_freelancer/all_user.dart';
 import 'package:freelancer/pages/freelancer/pages_freelancer/notification_page.dart';
-import 'package:freelancer/pages/freelancer/pages_freelancer/social_view_freelancer.dart';
+import 'package:freelancer/pages/freelancer/pages_freelancer/recent_jobs.dart';
+import 'package:freelancer/pages/freelancer/pages_freelancer/search_view.dart';
 import 'package:freelancer/pages/freelancer/pages_freelancer/user_profile_page.dart';
 
 class HomeViewFreelancer extends StatefulWidget {
@@ -23,6 +24,7 @@ class _HomeViewFreelancerState extends State<HomeViewFreelancer> {
   String email = "";
   String avatar = "";
   String position = "";
+
   @override
   void initState() {
     super.initState();
@@ -67,104 +69,155 @@ class _HomeViewFreelancerState extends State<HomeViewFreelancer> {
             backgroundColor: Color.fromRGBO(250, 250, 250, 1),
             body: SafeArea(
               child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 25, vertical: 15),
+                padding: const EdgeInsets.only(
+                  top: 15,
+                ),
                 child: SingleChildScrollView(
                   child: Column(
                     children: [
-                      _header(),
+                      Padding(
+                        padding: const EdgeInsets.only(
+                          left: 20,
+                          right: 20,
+                        ),
+                        child: _header(),
+                      ),
                       SizedBox(
                         height: 25,
                       ),
-                      _searchBar(),
-                      SizedBox(
-                        height: 25,
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            "Tất cả dịch vụ",
-                            style: TextStyle(
-                                color: Colors.black,
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold),
+                      GestureDetector(
+                        onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => JobSearchPage(),
+                            )),
+                        child: Padding(
+                          padding: const EdgeInsets.only(
+                            left: 20,
+                            right: 20,
                           ),
-                        ],
+                          child: _searchBar(),
+                        ),
+                      ),
+                      SizedBox(
+                        height: 25,
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(
+                          left: 20,
+                          right: 20,
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              "Tất cả dịch vụ",
+                              style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
                       ),
                       SizedBox(
                         height: 5,
                       ),
                       // Hiển thị categories về dịch vụ
-                      SizedBox(
-                        height: 250,
+                      Padding(
+                        padding: const EdgeInsets.only(
+                          left: 20,
+                          right: 20,
+                        ),
                         child: CategoriesJobHomeviewFree(),
                       ),
                       SizedBox(
                         height: 5,
                       ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            "Top các công việc hot",
-                            style: TextStyle(
-                                color: Colors.black,
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold),
-                          ),
-                          GestureDetector(
-                            onTap: () => Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => SocialViewFreelancer(),
-                                )),
-                            child: Text(
-                              "Xem tất cả",
+                      Padding(
+                        padding: const EdgeInsets.only(
+                          left: 20,
+                          right: 20,
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              "Các công việc gần đây",
                               style: TextStyle(
-                                  color: Color.fromRGBO(67, 101, 222, 1),
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.normal),
+                                  color: Colors.black,
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold),
                             ),
-                          ),
-                        ],
+                            GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => RecentJobs(),
+                                    ));
+                              },
+                              child: Text(
+                                "Xem tất cả",
+                                style: TextStyle(
+                                    color: Color.fromRGBO(67, 101, 222, 1),
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.normal),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                      SizedBox(
-                        height: 480,
+                      Padding(
+                        padding: const EdgeInsets.only(
+                          left: 20,
+                          right: 20,
+                        ),
                         child: JobListHomeviewCompo(),
                       ),
-
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            "Top Freelancy",
-                            style: TextStyle(
-                                color: Colors.black,
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold),
-                          ),
-                          GestureDetector(
-                            onTap: () => Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => AllUser(),
-                                )),
-                            child: Text(
-                              "Xem tất cả",
+                      SizedBox(
+                        height: 10,
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(
+                          left: 20,
+                          right: 20,
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              "Top Freelancy",
                               style: TextStyle(
-                                  color: Color.fromRGBO(67, 101, 222, 1),
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.normal),
+                                  color: Colors.black,
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold),
                             ),
-                          ),
-                        ],
+                            GestureDetector(
+                              onTap: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => AllUser(),
+                                  )),
+                              child: Text(
+                                "Xem tất cả",
+                                style: TextStyle(
+                                    color: Color.fromRGBO(67, 101, 222, 1),
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.normal),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                       SizedBox(
                         height: 20,
                       ),
-                      SizedBox(
-                        height: 1000,
+                      Padding(
+                        padding: const EdgeInsets.only(
+                          left: 20,
+                          right: 20,
+                        ),
                         child: TopUser(),
                       ),
                     ],
@@ -186,8 +239,8 @@ class _HomeViewFreelancerState extends State<HomeViewFreelancer> {
             BoxShadow(
               color: Colors.grey.withOpacity(0.3),
               spreadRadius: 2,
-              blurRadius: 5,
-              offset: Offset(0, 3),
+              blurRadius: 3,
+              offset: Offset(0, 2),
             ),
           ],
           border: Border.all(color: Colors.transparent)),
@@ -217,7 +270,7 @@ class _HomeViewFreelancerState extends State<HomeViewFreelancer> {
 
   Row _header() {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         // user profile image
@@ -256,21 +309,150 @@ class _HomeViewFreelancerState extends State<HomeViewFreelancer> {
           ),
         ),
 
-        Spacer(),
-        IconButton(
-            onPressed: () {
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => NotificationPage(),
-                  ));
-            },
-            icon: Icon(
-              Icons.notifications,
-              size: 35,
-              color: Color.fromRGBO(67, 101, 222, 1),
-            )),
+        _iconNoti(),
       ],
+    );
+  }
+
+  Widget _iconNoti() {
+    final ValueNotifier<int> unreadNotificationCount = ValueNotifier(0);
+
+    return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+      stream: FirebaseFirestore.instance
+          .collection('notifications')
+          .where('type', isEqualTo: 'enroll_noti')
+          .where('employerUID',
+              isEqualTo: FirebaseAuth.instance.currentUser?.uid)
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return Icon(
+            Icons.notifications_none_outlined,
+            size: 35,
+            color: Color.fromRGBO(67, 101, 222, 1),
+          );
+        }
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Icon(
+            Icons.notifications_none_outlined,
+            size: 35,
+            color: Color.fromRGBO(67, 101, 222, 1),
+          );
+        }
+        int unreadCountEnroll =
+            snapshot.data!.docs.where((doc) => doc['clicked'] == false).length;
+        return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+          stream: FirebaseFirestore.instance
+              .collection('notifications')
+              .where('type', isEqualTo: 'result_noti')
+              .where('candidateID',
+                  isEqualTo: FirebaseAuth.instance.currentUser?.uid)
+              .snapshots(),
+          builder: (context, snapshot) {
+            if (snapshot.hasError) {
+              return Icon(
+                Icons.notifications_none_outlined,
+                size: 35,
+                color: Color.fromRGBO(67, 101, 222, 1),
+              );
+            }
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Icon(
+                Icons.notifications_none_outlined,
+                size: 35,
+                color: Color.fromRGBO(67, 101, 222, 1),
+              );
+            }
+            int unreadCountResult = snapshot.data!.docs
+                .where((doc) => doc['clicked'] == false)
+                .length;
+            return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+              stream: FirebaseFirestore.instance
+                  .collection('notifications')
+                  .where('type', isEqualTo: 'finance_noti')
+                  .where('candidateID',
+                      isEqualTo: FirebaseAuth.instance.currentUser?.uid)
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.hasError) {
+                  return Container();
+                }
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Container();
+                }
+                int unreadCountFinance = snapshot.data!.docs
+                    .where((doc) => doc['clicked'] == false)
+                    .length;
+                return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+                  stream: FirebaseFirestore.instance
+                      .collection('notifications')
+                      .where('type', isEqualTo: 'feedback_noti')
+                      .where('candidateID',
+                          isEqualTo: FirebaseAuth.instance.currentUser?.uid)
+                      .snapshots(),
+                  builder: (context, snapshot) {
+                    if (snapshot.hasError) {
+                      return Container();
+                    }
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return Container();
+                    }
+                    int unreadCountFeedback = snapshot.data!.docs
+                        .where((doc) => doc['clicked'] == false)
+                        .length;
+                    unreadNotificationCount.value = unreadCountEnroll +
+                        unreadCountResult +
+                        unreadCountFinance +
+                        unreadCountFeedback;
+
+                    return Stack(children: [
+                      IconButton(
+                          onPressed: () {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => NotificationPage(),
+                                ));
+                          },
+                          icon: unreadNotificationCount.value > 0
+                              ? Icon(
+                                  Icons.notifications,
+                                  size: 35,
+                                  color: Color.fromRGBO(67, 101, 222, 1),
+                                )
+                              : Icon(
+                                  Icons.notifications_none_outlined,
+                                  size: 35,
+                                  color: Color.fromRGBO(67, 101, 222, 1),
+                                )),
+                      if (unreadNotificationCount.value > 0)
+                        Positioned(
+                          top: 2,
+                          right: 3,
+                          child: Container(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 5, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: Colors.red,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Text(
+                              unreadNotificationCount.value.toString(),
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ),
+                        ),
+                    ]);
+                  },
+                );
+              },
+            );
+          },
+        );
+      },
     );
   }
 }

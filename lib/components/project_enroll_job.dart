@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:freelancer/pages/freelancer/pages_freelancer/confirmation_page_freelancer.dart';
 import 'package:freelancer/pages/freelancer/pages_freelancer/other_user_job_details.dart';
+
 import 'package:intl/intl.dart';
 
 class ProjectEnrollJob extends StatefulWidget {
@@ -13,7 +14,6 @@ class ProjectEnrollJob extends StatefulWidget {
     required this.experience,
     required this.description,
     required this.enroll_end_time,
-    required this.enroll_start_time,
     required this.happeningTime,
     required this.location,
     required this.requirement,
@@ -29,7 +29,6 @@ class ProjectEnrollJob extends StatefulWidget {
     required this.accepted,
   });
 
-  Timestamp enroll_start_time;
   Timestamp enroll_end_time;
   String experience = '';
   Timestamp happeningTime;
@@ -74,6 +73,7 @@ class _ProjectEnrollJobState extends State<ProjectEnrollJob> {
     bool isEnrollmentEnded = endDate.isBefore(currentDate);
     String formattedDateTime =
         '${DateFormat('dd/MM/yyyy').format(widget.enroll_timestamp!)} - ${DateFormat('HH:mm').format(widget.enroll_timestamp!)}';
+    bool isDone = widget.category == "Done";
 
     final uploadTime =
         DateFormat('dd/MM/yyyy').format(widget.timestamp.toDate());
@@ -86,8 +86,7 @@ class _ProjectEnrollJobState extends State<ProjectEnrollJob> {
     final happeningTime =
         DateFormat('dd/MM/yyyy HH:mm').format(widget.happeningTime.toDate());
 
-    Color borderColor =
-        isEnrollmentEnded ? Colors.red : Color.fromRGBO(67, 101, 222, 1);
+    Color borderColor = isDone ? Colors.green : Color.fromRGBO(67, 101, 222, 1);
 
     return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
       stream: _userDataStream,
@@ -96,6 +95,7 @@ class _ProjectEnrollJobState extends State<ProjectEnrollJob> {
           final user = snapshot.data!.data();
           bool isCurrentUserAccepted =
               widget.accepted.contains(FirebaseAuth.instance.currentUser!.uid);
+          bool isAcceptedHasUser = widget.accepted.isEmpty;
 
           return Container(
             padding: EdgeInsets.all(15),
@@ -237,13 +237,17 @@ class _ProjectEnrollJobState extends State<ProjectEnrollJob> {
                         padding: EdgeInsets.all(0),
                         side: BorderSide.none,
                         label: Text(
-                          isCurrentUserAccepted
-                              ? "Trúng tuyển"
+                          isAcceptedHasUser == false
+                              ? isCurrentUserAccepted
+                                  ? "Trúng tuyển"
+                                  : "Từ chối"
                               : "Đã ứng tuyển",
                           style: TextStyle(color: Colors.white, fontSize: 16),
                         ),
-                        backgroundColor: isCurrentUserAccepted
-                            ? Colors.green
+                        backgroundColor: isAcceptedHasUser == false
+                            ? isCurrentUserAccepted
+                                ? Colors.green
+                                : Colors.red
                             : Color.fromRGBO(67, 101, 222, 1),
                       )
                     ],
@@ -267,23 +271,58 @@ class _ProjectEnrollJobState extends State<ProjectEnrollJob> {
                       color: Colors.grey[200],
                     ),
                   ),
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.calendar_month,
-                        color: Color.fromRGBO(67, 101, 222, 1),
-                      ),
-                      SizedBox(
-                        width: 5,
-                      ),
-                      Text(
-                        "Đã ứng tuyển vào: $formattedDateTime",
-                        style: TextStyle(
-                            fontSize: 16,
-                            color: Color.fromRGBO(67, 101, 222, 1)),
-                      ),
-                    ],
-                  ),
+                  isCurrentUserAccepted && isDone == true
+                      ? Row(
+                          children: const [
+                            Icon(
+                              Icons.done,
+                              color: Colors.green,
+                            ),
+                            SizedBox(
+                              width: 5,
+                            ),
+                            Text(
+                              "Công việc đã hoàn thành",
+                              style:
+                                  TextStyle(fontSize: 16, color: Colors.green),
+                            ),
+                          ],
+                        )
+                      : isCurrentUserAccepted == true
+                          ? Row(
+                              children: const [
+                                Icon(
+                                  Icons.work_outline_outlined,
+                                  color: Color.fromRGBO(67, 101, 222, 1),
+                                ),
+                                SizedBox(
+                                  width: 5,
+                                ),
+                                Text(
+                                  "Công việc đang trong quá trình thực hiện",
+                                  style: TextStyle(
+                                      fontSize: 16,
+                                      color: Color.fromRGBO(67, 101, 222, 1)),
+                                ),
+                              ],
+                            )
+                          : Row(
+                              children: [
+                                Icon(
+                                  Icons.calendar_month,
+                                  color: Color.fromRGBO(67, 101, 222, 1),
+                                ),
+                                SizedBox(
+                                  width: 5,
+                                ),
+                                Text(
+                                  "Đã ứng tuyển vào: $formattedDateTime",
+                                  style: TextStyle(
+                                      fontSize: 16,
+                                      color: Color.fromRGBO(67, 101, 222, 1)),
+                                ),
+                              ],
+                            ),
                 ],
               ),
             ),
