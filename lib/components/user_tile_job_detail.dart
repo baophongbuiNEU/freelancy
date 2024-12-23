@@ -127,6 +127,7 @@ class _UserTileJobDetailState extends State<UserTileJobDetail> {
         showDialog(
           context: context,
           builder: (context) => AlertDialog(
+            backgroundColor: Colors.white,
             title: Text('Thành công'),
             content: Text(
               'Đã chấp nhận ứng viên ${widget.userName}',

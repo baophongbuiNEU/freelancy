@@ -467,14 +467,13 @@ class _UserProfilePageState extends State<UserProfilePage> {
                         controller: skillController,
                         decoration: InputDecoration(
                           hintText: 'Nhập kỹ năng mới',
+                          hintStyle: TextStyle(color: Colors.red),
                           enabledBorder: const OutlineInputBorder(
-                            // width: 0.0 produces a thin "hairline" border
                             borderSide: BorderSide(
                                 color: Color.fromRGBO(67, 101, 222, 1),
                                 width: 2),
                           ),
                           focusedBorder: OutlineInputBorder(
-                            // width: 0.0 produces a thin "hairline" border
                             borderSide: BorderSide(
                                 color: Color.fromRGBO(67, 101, 222, 1),
                                 width: 2),

@@ -84,12 +84,12 @@ class _MessageViewFreelancerState extends State<MessageViewFreelancer>
           title: Text(
             "Tin nhắn",
           ),
-          actions: [
-            IconButton(
-              icon: Icon(Icons.logout),
-              onPressed: () => logout(context),
-            ),
-          ],
+          // actions: [
+          //   IconButton(
+          //     icon: Icon(Icons.logout),
+          //     onPressed: () => logout(context),
+          //   ),
+          // ],
         ),
         body: Column(
           children: [
@@ -268,9 +268,7 @@ class _MessageViewFreelancerState extends State<MessageViewFreelancer>
                 ? sendTime.toString().substring(0, 10)
                 : GetTimeAgo.parse(
                     DateTime.parse(timestamp.toDate().toString())),
-            lastMessage: lastMessage.length > 15
-                ? '${lastMessage.substring(0, 15)}...'
-                : lastMessage,
+            lastMessage: lastMessage,
             avatar: userData['avatar'],
             onTap: () {
               Navigator.push(

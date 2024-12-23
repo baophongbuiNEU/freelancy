@@ -5,11 +5,13 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:freelancer/components/categories_job_homeView_free.dart';
 import 'package:freelancer/components/job_list_homeview_compo.dart';
+import 'package:freelancer/components/post_list_homeView.dart';
 import 'package:freelancer/components/top_user.dart';
 import 'package:freelancer/pages/freelancer/pages_freelancer/all_user.dart';
 import 'package:freelancer/pages/freelancer/pages_freelancer/notification_page.dart';
-import 'package:freelancer/pages/freelancer/pages_freelancer/recent_jobs.dart';
 import 'package:freelancer/pages/freelancer/pages_freelancer/search_view.dart';
+import 'package:freelancer/pages/freelancer/pages_freelancer/upload_jobs.dart';
+import 'package:freelancer/pages/freelancer/pages_freelancer/upload_post.dart';
 import 'package:freelancer/pages/freelancer/pages_freelancer/user_profile_page.dart';
 
 class HomeViewFreelancer extends StatefulWidget {
@@ -154,11 +156,11 @@ class _HomeViewFreelancerState extends State<HomeViewFreelancer> {
                                 Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (context) => RecentJobs(),
+                                      builder: (context) => UploadJobs(),
                                     ));
                               },
                               child: Text(
-                                "Xem tất cả",
+                                "Thêm công việc",
                                 style: TextStyle(
                                     color: Color.fromRGBO(67, 101, 222, 1),
                                     fontSize: 16,
@@ -219,6 +221,51 @@ class _HomeViewFreelancerState extends State<HomeViewFreelancer> {
                           right: 20,
                         ),
                         child: TopUser(),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(
+                          left: 20,
+                          right: 20,
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              "Các bài viết gần đây",
+                              style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                            GestureDetector(
+                              onTap: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => UploadPost(
+                                      gallery: true,
+                                      selectedRole: "Ứng viên",
+                                    ),
+                                  )),
+                              child: Text(
+                                "Thêm bài viết",
+                                style: TextStyle(
+                                    color: Color.fromRGBO(67, 101, 222, 1),
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.normal),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(
+                        height: 5,
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(
+                          left: 7,
+                          right: 7,
+                        ),
+                        child: PostListHomeview(),
                       ),
                     ],
                   ),

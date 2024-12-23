@@ -126,11 +126,11 @@ class _AccountPageFreelancerState extends State<AccountPageFreelancer> {
                                 ));
                           },
                         ),
-                        Divider(
-                          height: 1,
-                          thickness: 1,
-                          color: Colors.grey[200],
-                        ),
+                        // Divider(
+                        //   height: 1,
+                        //   thickness: 1,
+                        //   color: Colors.grey[200],
+                        // ),
                         // AccountCompo(
                         //   name: "Đổi mật khẩu",
                         //   icon: Icons.key,
@@ -188,48 +188,18 @@ class _AccountPageFreelancerState extends State<AccountPageFreelancer> {
                                 ));
                           },
                         ),
-                        Divider(
-                          height: 1,
-                          thickness: 1,
-                          color: Colors.grey[200],
-                        ),
-                        // AccountCompo(
-                        //   name: "Quản lý Tài chính",
-                        //   icon: Icons.payment_rounded,
-                        // onTap: () {
-                        //   Navigator.push(
-                        //       context,
-                        //       MaterialPageRoute(
-                        //         builder: (context) => FinancePage(),
-                        //       ));
-                        // },
-                        // ),
-                        // Divider(
-                        //   height: 1,
-                        //   thickness: 1,
-                        //   color: Colors.grey[200],
-                        // ),
+                        if (role == 'admin')
+                          Divider(
+                            height: 1,
+                            thickness: 1,
+                            color: Colors.grey[200],
+                          ),
                         if (role == 'admin')
                           AccountCompo(
                             name: "Đi tới trang Quản trị",
                             icon: Icons.edit,
                             onTap: _openWebLink,
                           ),
-                        Divider(
-                          height: 1,
-                          thickness: 1,
-                          color: Colors.grey[200],
-                        ),
-                        // AccountCompo(
-                        //   name: "Trạng thái tìm việc",
-                        //   icon: Icons.visibility,
-                        //   onTap: () {},
-                        // ),
-                        // Divider(
-                        //   height: 1,
-                        //   thickness: 1,
-                        //   color: Colors.grey[200],
-                        // ),
                       ],
                     ),
                   ),

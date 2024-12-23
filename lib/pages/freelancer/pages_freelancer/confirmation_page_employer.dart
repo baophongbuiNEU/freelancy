@@ -1,4 +1,3 @@
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -100,6 +99,11 @@ class _ConfirmationPageEmployerState extends State<ConfirmationPageEmployer> {
                                 ? DateFormat('dd/MM/yyyy HH:mm')
                                     .format(latestTimestamp.toDate())
                                 : 'N/A';
+                            final accepted = jobDetails['accepted'].length;
+                            bool isSend = false;
+                            jobDetails['sent'] == true
+                                ? isSend = true
+                                : isSend = false;
 
                             return Scaffold(
                               backgroundColor: Color.fromRGBO(250, 250, 250, 1),
@@ -109,46 +113,101 @@ class _ConfirmationPageEmployerState extends State<ConfirmationPageEmployer> {
                                 backgroundColor:
                                     Color.fromRGBO(250, 250, 250, 1),
                                 actions: [
-                                  Expanded(
-                                    flex: 0,
-                                    child: PopupMenuButton<String>(
-                                      color: Colors.white,
-                                      onSelected: (value) async {
-                                        // Delete the post
-                                        DocumentReference postRef =
-                                            FirebaseFirestore.instance
-                                                .collection("jobs")
-                                                .doc(widget.jobID);
-                                        postRef.update({
-                                          'accepted': FieldValue.arrayRemove(
-                                              [widget.uid]),
-                                          'accepted_timestamps':
-                                              FieldValue.arrayRemove(jobDetails[
-                                                      'accepted_timestamps']
-                                                  .where((timestamp) =>
-                                                      timestamp['uid'] ==
-                                                      widget.uid)
-                                                  .toList()),
-                                        });
-                                        Navigator.pop(context);
-                                        await _deleteNotification();
+                                  if (isDone == false)
+                                    Expanded(
+                                      flex: 0,
+                                      child: PopupMenuButton<String>(
+                                        color: Colors.white,
+                                        onSelected: (value) async {
+                                          showDialog(
+                                              context: context,
+                                              builder: (context) {
+                                                return AlertDialog(
+                                                  title: Text(
+                                                      "Yêu cầu hủy công việc"),
+                                                  content: Text(
+                                                      "Bạn có chắc muốn hủy không?"),
+                                                  actions: [
+                                                    TextButton(
+                                                      onPressed: () {
+                                                        Navigator.pop(context);
+                                                      },
+                                                      child: Text(
+                                                        'Đóng',
+                                                        style: TextStyle(
+                                                            color:
+                                                                Color.fromRGBO(
+                                                                    67,
+                                                                    101,
+                                                                    222,
+                                                                    1),
+                                                            fontSize: 16),
+                                                      ),
+                                                    ),
+                                                    TextButton(
+                                                      onPressed: () async {
+                                                        Navigator.pop(context);
+                                                        {
+                                                          DocumentReference
+                                                              postRef =
+                                                              FirebaseFirestore
+                                                                  .instance
+                                                                  .collection(
+                                                                      "jobs")
+                                                                  .doc(widget
+                                                                      .jobID);
+                                                          postRef.update({
+                                                            'accepted': FieldValue
+                                                                .arrayRemove([
+                                                              widget.uid
+                                                            ]),
+                                                            'accepted_timestamps':
+                                                                FieldValue.arrayRemove(jobDetails[
+                                                                        'accepted_timestamps']
+                                                                    .where((timestamp) =>
+                                                                        timestamp[
+                                                                            'uid'] ==
+                                                                        widget
+                                                                            .uid)
+                                                                    .toList()),
+                                                          });
+                                                          Navigator.pop(
+                                                              context);
+                                                          await _deleteNotification();
+                                                        }
+                                                      },
+                                                      child: Text(
+                                                        'Chắc chắn',
+                                                        style: TextStyle(
+                                                            color:
+                                                                Color.fromRGBO(
+                                                                    67,
+                                                                    101,
+                                                                    222,
+                                                                    1),
+                                                            fontSize: 16),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                );
+                                              });
 
-                                        // DocumentReference notificationRef =
-                                        //     FirebaseFirestore.instance
-                                        //         .collection("notifications")
-                                        //         .doc(); // Generate a unique document ID
+                                          // DocumentReference notificationRef =
+                                          //     FirebaseFirestore.instance
+                                          //         .collection("notifications")
+                                          //         .doc(); // Generate a unique document ID
 
-                                        // notificationRef.delete();
-                                      },
-                                      itemBuilder: (context) => [
-                                        PopupMenuItem<String>(
-                                          value: 'delete',
-                                          child: Text('Hủy thỏa thuận'),
-                                        ),
-                                      ],
-                                      icon: Icon(Icons.more_vert),
-                                    ),
-                                  )
+                                          // notificationRef.delete();
+                                        },
+                                        itemBuilder: (context) => [
+                                          PopupMenuItem<String>(
+                                            value: 'delete',
+                                            child: Text('Hủy thỏa thuận'),
+                                          ),
+                                        ],
+                                        icon: Icon(Icons.more_vert),
+                                      ),
+                                    )
                                 ],
                               ),
                               body: SingleChildScrollView(
@@ -238,7 +297,9 @@ class _ConfirmationPageEmployerState extends State<ConfirmationPageEmployer> {
                                                           ),
                                                           child: Text(
                                                             'Tuyển dụng',
-                                                            textAlign: TextAlign.center,
+                                                            overflow:
+                                                                TextOverflow
+                                                                    .ellipsis,
                                                             style: TextStyle(
                                                                 color: Colors
                                                                     .white,
@@ -384,20 +445,24 @@ class _ConfirmationPageEmployerState extends State<ConfirmationPageEmployer> {
                                         _buildAgreementDate(formattedTimestamp),
                                         const SizedBox(height: 24),
                                         _buildActions(
-                                            user["name"],
-                                            user["uid"],
-                                            user["avatar"],
-                                            () => Navigator.push(
-                                                context,
-                                                MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      OtherUserProfilePage(
-                                                          userId: user["uid"]),
-                                                )),
-                                            jobDetails['salary'],
-                                            isDone,
-                                            jobDetails['title'],
-                                            currentUser["name"]),
+                                          user["name"],
+                                          user["uid"],
+                                          user["avatar"],
+                                          () => Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) =>
+                                                    OtherUserProfilePage(
+                                                        userId: user["uid"]),
+                                              )),
+                                          jobDetails['salary'],
+                                          isDone,
+                                          jobDetails['title'],
+                                          currentUser["name"],
+                                          jobDetails['accepted'].length,
+                                          // jobDetails['numberCandidates'],
+                                          isSend,
+                                        ),
                                         SizedBox(height: 25),
                                       ],
                                     ),
@@ -497,6 +562,9 @@ class _ConfirmationPageEmployerState extends State<ConfirmationPageEmployer> {
     bool isDone,
     String jobTitle,
     String employerName,
+    int accepted,
+    // int numberCandidates,
+    bool isSend,
   ) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -544,17 +612,47 @@ class _ConfirmationPageEmployerState extends State<ConfirmationPageEmployer> {
             //       builder: (context) => ImageViewer(image: userAvatar),
             //     ));
             if (isDone == false) {
-              showDialog(
-                context: context,
-                builder: (context) => PaymentConfirmationDialog(
-                  salary: salary,
-                  jobID: widget.jobID,
-                  uid: userID,
-                  clientName: userName,
-                  jobTitle: jobTitle,
-                  employerName: employerName,
-                ),
-              );
+              isSend == true
+                  ? showDialog(
+                      context: context,
+                      builder: (context) {
+                        return AlertDialog(
+                          backgroundColor: Colors.white,
+                          title: Text("Công việc đã hoàn thành"),
+                          content: Text(
+                            "Đi tới trang thanh toán",
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                Navigator.pop(context);
+                                showDialog(
+                                  context: context,
+                                  builder: (context) =>
+                                      PaymentConfirmationDialog(
+                                    salary: salary,
+                                    jobID: widget.jobID,
+                                    uid: userID,
+                                    clientName: userName,
+                                    jobTitle: jobTitle,
+                                    employerName: employerName,
+                                    accepted: accepted,
+                                    // numberCandidates: numberCandidates,
+                                  ),
+                                );
+                              },
+                              child: Text(
+                                'Thanh toán',
+                                style: TextStyle(
+                                    color: Color.fromRGBO(67, 101, 222, 1),
+                                    fontSize: 16),
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    )
+                  : () {};
             }
           },
           style: ElevatedButton.styleFrom(
@@ -562,7 +660,11 @@ class _ConfirmationPageEmployerState extends State<ConfirmationPageEmployer> {
                   ? Color.fromRGBO(67, 101, 222, 1)
                   : Colors.green),
           child: Text(
-            isDone == false ? 'Thanh toán' : 'Đã hoàn thành',
+            isDone == false
+                ? isSend == false
+                    ? 'Đang thực hiện'
+                    : 'Xác nhận hoàn thành'
+                : 'Đã hoàn thành',
             style: TextStyle(color: Colors.white, fontSize: 16),
           ),
         ),

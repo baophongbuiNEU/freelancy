@@ -134,7 +134,6 @@ class _UploadPostState extends State<UploadPost> {
                     onPressed: () {
                       Navigator.pop(context);
                       Navigator.pop(context);
-                      Navigator.pop(context);
                     },
                   ),
                 ],

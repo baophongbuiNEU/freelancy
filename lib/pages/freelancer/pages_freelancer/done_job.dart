@@ -64,7 +64,6 @@ class _DoneJobState extends State<DoneJob> {
                     enroll_end_time: post["enroll_end_time"],
                     happeningTime: post["happening_time"],
                     location: post["location"],
-                    requirement: post["requirement"],
                     salary: post["salary"],
                     skills: post["skills"],
                     title: post["title"],

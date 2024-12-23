@@ -1,4 +1,3 @@
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -103,6 +102,7 @@ class _OtherUserJobDetailsState extends State<OtherUserJobDetails> {
               .doc(); // Generate a unique document ID
           notificationRef.set({
             'clicked': false,
+            'category': 'enroll',
             'type': 'enroll_noti',
             'jobID': widget.jobID,
             'candidateID': FirebaseAuth.instance.currentUser!.uid,
@@ -342,11 +342,10 @@ class _OtherUserJobDetailsState extends State<OtherUserJobDetails> {
                                         child: _buildInfoRow(Icons.work,
                                             jobDetails['experience']!),
                                       ),
-                                      Expanded(
-                                        child: _buildInfoRow(
-                                            Icons.person,
-                                            "Số lượng tuyển: ${jobDetails['numberCandidates']}"),
-                                      ),
+                                      // Expanded(
+                                      //   child: _buildInfoRow(Icons.person,
+                                      //       "Số lượng tuyển: ${jobDetails['numberCandidates']}"),
+                                      // ),
                                     ],
                                   ),
                                   Row(
@@ -498,16 +497,6 @@ class _OtherUserJobDetailsState extends State<OtherUserJobDetails> {
     );
   }
 
-  // Widget _buildDateInfo(String postedDate, String deadline) {
-  //   return Row(
-  //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  //     children: [
-  //       _buildInfoRow(Icons.calendar_today, 'Đăng ngày: $postedDate'),
-  //       _buildInfoRow(Icons.timer, 'Hạn nộp: $deadline'),
-  //     ],
-  //   );
-  // }
-
   Widget _buildSection(String title, String content) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -523,26 +512,4 @@ class _OtherUserJobDetailsState extends State<OtherUserJobDetails> {
       ],
     );
   }
-
-  // Widget _buildListSection(String title, List<String> items) {
-  //   return Column(
-  //     crossAxisAlignment: CrossAxisAlignment.start,
-  //     children: [
-  //       Text(title,
-  //           style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-  //       SizedBox(height: 8),
-  //       ...items.map((item) => Padding(
-  //             padding: const EdgeInsets.only(left: 16, bottom: 4),
-  //             child: Row(
-  //               crossAxisAlignment: CrossAxisAlignment.start,
-  //               children: [
-  //                 Text('• ', style: TextStyle(fontSize: 18)),
-  //                 Expanded(child: Text(item)),
-  //               ],
-  //             ),
-  //           )),
-  //       SizedBox(height: 16),
-  //     ],
-  //   );
-  // }
 }

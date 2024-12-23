@@ -60,6 +60,8 @@ class _JobDetailsState extends State<JobDetails> {
         if (snapshot.connectionState == ConnectionState.active) {
           if (snapshot.hasData) {
             final jobDetails = snapshot.data!.data();
+            // print(jobDetails!['numberCandidates']);
+            // print(jobDetails['accepted'].length);
 
             return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
               stream: FirebaseFirestore.instance
@@ -194,10 +196,10 @@ class _JobDetailsState extends State<JobDetails> {
                                         child: _buildInfoRow(Icons.work,
                                             jobDetails['experience']!),
                                       ),
-                                      Expanded(
-                                        child: _buildInfoRow(Icons.person,
-                                            "Số lượng tuyển: ${jobDetails['numberCandidates']}"),
-                                      ),
+                                      // Expanded(
+                                      //   child: _buildInfoRow(Icons.person,
+                                      //       "Số lượng tuyển: ${jobDetails['numberCandidates']}"),
+                                      // ),
                                     ],
                                   ),
                                   Row(
@@ -230,7 +232,7 @@ class _JobDetailsState extends State<JobDetails> {
                                   fontWeight: FontWeight.bold, fontSize: 20),
                             ),
                             _buildSection(
-                                jobDetails['numberCandidates'],
+                                // jobDetails['numberCandidates'],
                                 jobDetails['description']!,
                                 enrolledUsers: jobDetails['enrolls'],
                                 jobDetails['accepted']
@@ -284,84 +286,8 @@ class _JobDetailsState extends State<JobDetails> {
     );
   }
 
-  // Widget _buildDateInfo(String postedDate, String deadline) {
-  //   return Row(
-  //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  //     children: [
-  //       _buildInfoRow(Icons.calendar_today, 'Đăng ngày: $postedDate'),
-  //       _buildInfoRow(Icons.timer, 'Hạn nộp: $deadline'),
-  //     ],
-  //   );
-  // }
-
-  // Widget _buildSection(
-  //   String title,
-  //   String content,
-  //   bool isAccepted, {
-  //   List<dynamic>? enrolledUsers,
-  // }) {
-  //   return Column(
-  //     crossAxisAlignment: CrossAxisAlignment.start,
-  //     children: [
-  //       if (enrolledUsers != null && enrolledUsers.isNotEmpty)
-  //         Column(
-  //           crossAxisAlignment: CrossAxisAlignment.start,
-  //           children: [
-  //             SizedBox(height: 10),
-  //             StreamBuilder<List<Map<String, dynamic>>>(
-  //               stream: _fetchEnrolledUsersStream(enrolledUsers),
-  //               builder: (context, snapshot) {
-  //                 if (snapshot.hasData) {
-  //                   if (snapshot.data!.isEmpty) {
-  //                     return Text(
-  //                       "Hiện chưa có ai ứng tuyển!",
-  //                       style: TextStyle(
-  //                           fontWeight: FontWeight.bold, fontSize: 18),
-  //                     );
-  //                   } else {
-  //                     return Column(
-  //                       children: snapshot.data!
-  //                           .map((user) => Padding(
-  //                                 padding: const EdgeInsets.symmetric(
-  //                                     horizontal: 15),
-  //                                 child: UserTileJobDetail(
-  //                                   onTap: () => Navigator.push(
-  //                                       context,
-  //                                       MaterialPageRoute(
-  //                                         builder: (context) =>
-  //                                             OtherUserProfilePage(
-  //                                                 userId: user["uid"]),
-  //                                       )),
-  //                                   userName: user["name"],
-  //                                   avatar: user["avatar"],
-  //                                   email: user["email"],
-  //                                   jobID: widget.jobID,
-  //                                   uid: user["uid"],
-  //                                   isAccepted: isAccepted,
-  //                                   accepts: List<String>.from(
-  //                                     widget.accepted ?? [],
-  //                                   ),
-  //                                 ),
-  //                               ))
-  //                           .toList(),
-  //                     );
-  //                   }
-  //                 } else if (snapshot.hasError) {
-  //                   return Text('Error: ${snapshot.error}');
-  //                 } else {
-  //                   return Center(child: CircularProgressIndicator());
-  //                 }
-  //               },
-  //             ),
-  //             SizedBox(height: 16),
-  //           ],
-  //         ),
-  //     ],
-  //   );
-  // }
-
   Widget _buildSection(
-    int numberCandidates,
+    // int numberCandidates,
     String content,
     bool isAccepted, {
     List<dynamic>? enrolledUsers,
@@ -370,146 +296,147 @@ class _JobDetailsState extends State<JobDetails> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SizedBox(height: 8),
-        if (widget.accepted.isNotEmpty &&
-            widget.accepted.length < numberCandidates) ...[
-          // StreamBuilder for Accepted Users
-          StreamBuilder<List<Map<String, dynamic>>>(
-            stream: _fetchAcceptedUsersStream(widget.accepted),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return Center(
-                  child: CircularProgressIndicator(
-                    color: Color.fromRGBO(67, 101, 222, 1),
-                  ),
-                );
-              } else if (snapshot.hasError) {
-                return Text('Error: ${snapshot.error}');
-              } else if (snapshot.hasData && snapshot.data!.isEmpty) {
-                return Center(
-                  child: Text(
-                    "Hiện chưa có ai chấp nhận!",
-                    style:
-                        TextStyle(fontWeight: FontWeight.normal, fontSize: 18),
-                  ),
-                );
-              } else {
-                int remainCadidate = numberCandidates - widget.accepted.length;
+        // if (widget.accepted.isNotEmpty &&
+        //     widget.accepted.length < numberCandidates) ...[
+        //   // StreamBuilder for Accepted Users
+        //   StreamBuilder<List<Map<String, dynamic>>>(
+        //     stream: _fetchAcceptedUsersStream(widget.accepted),
+        //     builder: (context, snapshot) {
+        //       if (snapshot.connectionState == ConnectionState.waiting) {
+        //         return Center(
+        //           child: CircularProgressIndicator(
+        //             color: Color.fromRGBO(67, 101, 222, 1),
+        //           ),
+        //         );
+        //       } else if (snapshot.hasError) {
+        //         return Text('Error: ${snapshot.error}');
+        //       } else if (snapshot.hasData && snapshot.data!.isEmpty) {
+        //         return Center(
+        //           child: Text(
+        //             "Hiện chưa có ai chấp nhận!",
+        //             style:
+        //                 TextStyle(fontWeight: FontWeight.normal, fontSize: 18),
+        //           ),
+        //         );
+        //       } else {
+        //         int remainCadidate = numberCandidates - widget.accepted.length;
 
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 15),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            "Đã chấp nhận",
-                            style: TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.bold),
-                          ),
-                          remainCadidate == 0
-                              ? Text("")
-                              : Text(
-                                  "Cần $remainCadidate ứng viên nữa",
-                                  style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.normal),
-                                ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(height: 5), // Spacer between sections
+        //         return Column(
+        //           crossAxisAlignment: CrossAxisAlignment.start,
+        //           children: [
+        //             Padding(
+        //               padding: const EdgeInsets.symmetric(horizontal: 15),
+        //               child: Row(
+        //                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        //                 children: [
+        //                   Text(
+        //                     "Đã chấp nhận",
+        //                     style: TextStyle(
+        //                         fontSize: 18, fontWeight: FontWeight.bold),
+        //                   ),
+        //                   remainCadidate == 0
+        //                       ? Text("")
+        //                       : Text(
+        //                           "Cần $remainCadidate ứng viên nữa",
+        //                           style: TextStyle(
+        //                               fontSize: 16,
+        //                               fontWeight: FontWeight.normal),
+        //                         ),
+        //                 ],
+        //               ),
+        //             ),
+        //             SizedBox(height: 5), // Spacer between sections
 
-                    ...snapshot.data!.map((user) => Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 15),
-                          child: UserTileJobConfirm(
-                            onTap: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    OtherUserProfilePage(userId: user["uid"]),
-                              ),
-                            ),
-                            userName: user["name"],
-                            avatar: user["avatar"],
-                            email: user["email"],
-                            jobID: widget.jobID,
-                            uid: user["uid"],
-                            isAccepted: isAccepted,
-                            accepts: List<String>.from(widget.accepted ?? []),
-                          ),
-                        )),
-                  ],
-                );
-              }
-            },
-          ),
-          // StreamBuilder for Enrolled Users (excluding accepted users)
-          StreamBuilder<List<Map<String, dynamic>>>(
-            stream: _fetchEnrolledUsersStream(enrolledUsers!),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return Center(
-                  child: CircularProgressIndicator(
-                    color: Color.fromRGBO(67, 101, 222, 1),
-                  ),
-                );
-              } else if (snapshot.hasError) {
-                return Text('Error: ${snapshot.error}');
-              } else if (snapshot.hasData && snapshot.data!.isEmpty) {
-                return Center(
-                  child: Text(
-                    "Hiện chưa có ai ứng tuyển!",
-                    style:
-                        TextStyle(fontWeight: FontWeight.normal, fontSize: 18),
-                  ),
-                );
-              } else {
-                // Exclude accepted users from enrolled list
-                List<Map<String, dynamic>> filteredEnrolledUsers = snapshot
-                    .data!
-                    .where((user) => !widget.accepted.contains(user["uid"]))
-                    .toList();
+        //             ...snapshot.data!.map((user) => Padding(
+        //                   padding: const EdgeInsets.symmetric(horizontal: 15),
+        //                   child: UserTileJobConfirm(
+        //                     onTap: () => Navigator.push(
+        //                       context,
+        //                       MaterialPageRoute(
+        //                         builder: (context) =>
+        //                             OtherUserProfilePage(userId: user["uid"]),
+        //                       ),
+        //                     ),
+        //                     userName: user["name"],
+        //                     avatar: user["avatar"],
+        //                     email: user["email"],
+        //                     jobID: widget.jobID,
+        //                     uid: user["uid"],
+        //                     isAccepted: isAccepted,
+        //                     accepts: List<String>.from(widget.accepted ?? []),
+        //                   ),
+        //                 )),
+        //           ],
+        //         );
+        //       }
+        //     },
+        //   ),
+        //   // StreamBuilder for Enrolled Users (excluding accepted users)
+        //   StreamBuilder<List<Map<String, dynamic>>>(
+        //     stream: _fetchEnrolledUsersStream(enrolledUsers!),
+        //     builder: (context, snapshot) {
+        //       if (snapshot.connectionState == ConnectionState.waiting) {
+        //         return Center(
+        //           child: CircularProgressIndicator(
+        //             color: Color.fromRGBO(67, 101, 222, 1),
+        //           ),
+        //         );
+        //       } else if (snapshot.hasError) {
+        //         return Text('Error: ${snapshot.error}');
+        //       } else if (snapshot.hasData && snapshot.data!.isEmpty) {
+        //         return Center(
+        //           child: Text(
+        //             "Hiện chưa có ai ứng tuyển!",
+        //             style:
+        //                 TextStyle(fontWeight: FontWeight.normal, fontSize: 18),
+        //           ),
+        //         );
+        //       } else {
+        //         // Exclude accepted users from enrolled list
+        //         List<Map<String, dynamic>> filteredEnrolledUsers = snapshot
+        //             .data!
+        //             .where((user) => !widget.accepted.contains(user["uid"]))
+        //             .toList();
 
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 15),
-                      child: Text(
-                        "Đã ứng tuyển",
-                        style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                    SizedBox(height: 5), // Spacer between sections
+        //         return Column(
+        //           crossAxisAlignment: CrossAxisAlignment.start,
+        //           children: [
+        //             Padding(
+        //               padding: const EdgeInsets.symmetric(horizontal: 15),
+        //               child: Text(
+        //                 "Đã ứng tuyển",
+        //                 style: TextStyle(
+        //                     fontSize: 18, fontWeight: FontWeight.bold),
+        //               ),
+        //             ),
+        //             SizedBox(height: 5), // Spacer between sections
 
-                    ...filteredEnrolledUsers.map((user) => Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 15),
-                          child: UserTileJobDetail(
-                            onTap: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    OtherUserProfilePage(userId: user["uid"]),
-                              ),
-                            ),
-                            userName: user["name"],
-                            avatar: user["avatar"],
-                            email: user["email"],
-                            jobID: widget.jobID,
-                            uid: user["uid"],
-                            isAccepted: isAccepted,
-                            accepts: List<String>.from(widget.accepted ?? []),
-                          ),
-                        )),
-                  ],
-                );
-              }
-            },
-          ),
-        ] else if (widget.accepted.isNotEmpty)
+        //             ...filteredEnrolledUsers.map((user) => Padding(
+        //                   padding: const EdgeInsets.symmetric(horizontal: 15),
+        //                   child: UserTileJobDetail(
+        //                     onTap: () => Navigator.push(
+        //                       context,
+        //                       MaterialPageRoute(
+        //                         builder: (context) =>
+        //                             OtherUserProfilePage(userId: user["uid"]),
+        //                       ),
+        //                     ),
+        //                     userName: user["name"],
+        //                     avatar: user["avatar"],
+        //                     email: user["email"],
+        //                     jobID: widget.jobID,
+        //                     uid: user["uid"],
+        //                     isAccepted: isAccepted,
+        //                     accepts: List<String>.from(widget.accepted ?? []),
+        //                   ),
+        //                 )),
+        //           ],
+        //         );
+        //       }
+        //     },
+        //   ),
+        // ] else
+        if (widget.accepted.isNotEmpty)
           StreamBuilder<List<Map<String, dynamic>>>(
             stream: _fetchAcceptedUsersStream(widget.accepted),
             builder: (context, snapshot) {

@@ -1,4 +1,3 @@
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -41,6 +40,19 @@ class _ConfirmationPageFreelancerState
         doc.reference.delete();
       }
     });
+  }
+
+  Future<bool> notificationExists(
+      String? clientName, String? jobID, String? employerUID) async {
+    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+        .collection('notifications')
+        .where('clientName', isEqualTo: clientName)
+        .where('jobID', isEqualTo: jobID)
+        .where('employerUID', isEqualTo: employerUID)
+        .where('type', isEqualTo: "finance_noti")
+        .get();
+
+    return querySnapshot.docs.isNotEmpty;
   }
 
   @override
@@ -94,11 +106,15 @@ class _ConfirmationPageFreelancerState
                                     notifications.isEmpty
                                         ? isFeedback = false
                                         : isFeedback = true;
+                                    bool isSend = false;
+                                    jobDetails!['sent'] == true
+                                        ? isSend = true
+                                        : isSend = false;
 
                                     // Format upload time and enrollment end time
                                     final uploadTime =
                                         DateFormat('dd/MM/yyyy HH:mm').format(
-                                            jobDetails!['timestamp'].toDate());
+                                            jobDetails['timestamp'].toDate());
                                     final enrollEndTime =
                                         DateFormat('dd/MM/yyyy HH:mm').format(
                                             jobDetails['enroll_end_time']
@@ -146,50 +162,103 @@ class _ConfirmationPageFreelancerState
                                         centerTitle: true,
                                         backgroundColor:
                                             Color.fromRGBO(250, 250, 250, 1),
-                                        // actions: [
-                                        //   Expanded(
-                                        //     flex: 0,
-                                        //     child: PopupMenuButton<String>(
-                                        //       color: Colors.white,
-                                        //       onSelected: (value) async {
-                                        //         // Delete the post
-                                        //         DocumentReference postRef =
-                                        //             FirebaseFirestore.instance
-                                        //                 .collection("jobs")
-                                        //                 .doc(widget.jobID);
-                                        //         postRef.update({
-                                        //           'accepted':
-                                        //               FieldValue.arrayRemove(
-                                        //                   [widget.uid]),
-                                        //           'accepted_timestamps': FieldValue
-                                        //               .arrayRemove(jobDetails[
-                                        //                       'accepted_timestamps']
-                                        //                   .where((timestamp) =>
-                                        //                       timestamp[
-                                        //                           'uid'] ==
-                                        //                       widget.uid)
-                                        //                   .toList()),
-                                        //         });
-                                        //         Navigator.pop(context);
-                                        //         await _deleteNotification();
-
-                                        //         // DocumentReference notificationRef =
-                                        //         //     FirebaseFirestore.instance
-                                        //         //         .collection("notifications")
-                                        //         //         .doc(); // Generate a unique document ID
-
-                                        //         // notificationRef.delete();
-                                        //       },
-                                        //       itemBuilder: (context) => [
-                                        //         PopupMenuItem<String>(
-                                        //           value: 'delete',
-                                        //           child: Text('Hủy thỏa thuận'),
-                                        //         ),
-                                        //       ],
-                                        //       icon: Icon(Icons.more_vert),
-                                        //     ),
-                                        //   )
-                                        // ],
+                                        actions: [
+                                          if (isDone == false)
+                                            Expanded(
+                                              flex: 0,
+                                              child: PopupMenuButton<String>(
+                                                color: Colors.white,
+                                                onSelected: (value) async {
+                                                  showDialog(
+                                                      context: context,
+                                                      builder: (context) {
+                                                        return AlertDialog(
+                                                          title: Text(
+                                                              "Yêu cầu hủy công việc"),
+                                                          content: Text(
+                                                              "Bạn có chắc muốn hủy không?"),
+                                                          actions: [
+                                                            TextButton(
+                                                              onPressed: () {
+                                                                Navigator.pop(
+                                                                    context);
+                                                              },
+                                                              child: Text(
+                                                                'Đóng',
+                                                                style: TextStyle(
+                                                                    color: Color
+                                                                        .fromRGBO(
+                                                                            67,
+                                                                            101,
+                                                                            222,
+                                                                            1),
+                                                                    fontSize:
+                                                                        16),
+                                                              ),
+                                                            ),
+                                                            TextButton(
+                                                              onPressed: () {
+                                                                Navigator.pop(
+                                                                    context);
+                                                                {
+                                                                  // Delete the post
+                                                                  DocumentReference
+                                                                      postRef =
+                                                                      FirebaseFirestore
+                                                                          .instance
+                                                                          .collection(
+                                                                              "jobs")
+                                                                          .doc(widget
+                                                                              .jobID);
+                                                                  postRef
+                                                                      .update({
+                                                                    'accepted':
+                                                                        FieldValue
+                                                                            .arrayRemove([
+                                                                      FirebaseAuth
+                                                                          .instance
+                                                                          .currentUser!
+                                                                          .uid
+                                                                    ]),
+                                                                    'accepted_timestamps': FieldValue.arrayRemove(acceptedTimestamps
+                                                                        .where((timestamp) =>
+                                                                            timestamp['uid'] ==
+                                                                            FirebaseAuth.instance.currentUser!.uid)
+                                                                        .toList()),
+                                                                  });
+                                                                  Navigator.pop(
+                                                                      context);
+                                                                  _deleteNotification();
+                                                                }
+                                                              },
+                                                              child: Text(
+                                                                'Chắc chắn',
+                                                                style: TextStyle(
+                                                                    color: Color
+                                                                        .fromRGBO(
+                                                                            67,
+                                                                            101,
+                                                                            222,
+                                                                            1),
+                                                                    fontSize:
+                                                                        16),
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        );
+                                                      });
+                                                },
+                                                itemBuilder: (context) => [
+                                                  PopupMenuItem<String>(
+                                                    value: 'delete',
+                                                    child:
+                                                        Text('Hủy công việc'),
+                                                  ),
+                                                ],
+                                                icon: Icon(Icons.more_vert),
+                                              ),
+                                            )
+                                        ],
                                       ),
                                       body: SingleChildScrollView(
                                         child: SafeArea(
@@ -294,6 +363,9 @@ class _ConfirmationPageFreelancerState
                                                                     style: TextStyle(
                                                                         color: Colors
                                                                             .white,
+                                                                        overflow:
+                                                                            TextOverflow
+                                                                                .ellipsis,
                                                                         fontSize:
                                                                             16),
                                                                   ),
@@ -483,7 +555,8 @@ class _ConfirmationPageFreelancerState
                                                     isFeedback,
                                                     jobDetails['title'],
                                                     isDone,
-                                                    acceptedTimestamps),
+                                                    acceptedTimestamps,
+                                                    isSend),
                                                 SizedBox(height: 25),
                                               ],
                                             ),
@@ -592,6 +665,7 @@ class _ConfirmationPageFreelancerState
     String jobTitle,
     bool isDone,
     List<dynamic> acceptedTimestamps,
+    bool isSend,
   ) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -615,7 +689,12 @@ class _ConfirmationPageFreelancerState
         ),
         const SizedBox(width: 16),
         ElevatedButton(
-            onPressed: () {
+            onPressed: () async {
+              bool exists = await notificationExists(
+                FirebaseAuth.instance.currentUser!.uid,
+                widget.jobID,
+                widget.uid,
+              );
               isDone == true
                   ? isFeedback == true
                       ? showDialog(
@@ -681,65 +760,103 @@ class _ConfirmationPageFreelancerState
                               ],
                             );
                           })
-                  : showDialog(
-                      context: context,
-                      builder: (context) {
-                        return AlertDialog(
-                          title: Text("Yêu cầu hủy công việc"),
-                          content: Text("Bạn có chắc muốn hủy không?"),
-                          actions: [
-                            TextButton(
-                              onPressed: () {
-                                Navigator.pop(context);
-                              },
-                              child: Text(
-                                'Đóng',
-                                style: TextStyle(
-                                    color: Color.fromRGBO(67, 101, 222, 1),
-                                    fontSize: 16),
+                  : isSend == false
+                      ? showDialog(
+                          context: context,
+                          builder: (context) {
+                            return AlertDialog(
+                              backgroundColor: Colors.white,
+                              title: Text("Đánh dấu là đã hoàn thành"),
+                              content: Text(
+                                "Bạn có chắc đã hoàn thành công việc không?",
                               ),
-                            ),
-                            TextButton(
-                              onPressed: () {
-                                Navigator.pop(context);
-                                {
-                                  // Delete the post
-                                  DocumentReference postRef = FirebaseFirestore
-                                      .instance
-                                      .collection("jobs")
-                                      .doc(widget.jobID);
-                                  postRef.update({
-                                    'accepted': FieldValue.arrayRemove([
-                                      FirebaseAuth.instance.currentUser!.uid
-                                    ]),
-                                    'accepted_timestamps':
-                                        FieldValue.arrayRemove(
-                                            acceptedTimestamps
-                                                .where((timestamp) =>
-                                                    timestamp['uid'] ==
-                                                    FirebaseAuth.instance
-                                                        .currentUser!.uid)
-                                                .toList()),
-                                  });
-                                  Navigator.pop(context);
-                                  _deleteNotification();
-                                }
-                              },
-                              child: Text(
-                                'Chắc chắn',
-                                style: TextStyle(
-                                    color: Color.fromRGBO(67, 101, 222, 1),
-                                    fontSize: 16),
-                              ),
-                            ),
-                          ],
-                        );
-                      });
+                              actions: [
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.pop(context);
+                                  },
+                                  child: Text(
+                                    'Đóng',
+                                    style: TextStyle(
+                                        color: Color.fromRGBO(67, 101, 222, 1),
+                                        fontSize: 16),
+                                  ),
+                                ),
+                                TextButton(
+                                  onPressed: () {
+                                    {
+                                      DocumentReference notificationRef =
+                                          FirebaseFirestore.instance
+                                              .collection("notifications")
+                                              .doc(); // Generate a unique document ID
+                                      notificationRef.set({
+                                        'clicked': false,
+                                        'category': 'markDone',
+                                        'type': 'enroll_noti',
+                                        'jobID': widget.jobID,
+                                        'candidateID': FirebaseAuth
+                                            .instance.currentUser!.uid,
+                                        'employerUID': widget.uid,
+                                        'timestamp': Timestamp.now(),
+                                      });
+                                      DocumentReference jobRef = FirebaseFirestore
+                                          .instance
+                                          .collection("jobs")
+                                          .doc(widget
+                                              .jobID); // Generate a unique document ID
+                                      jobRef.update({
+                                        'sent': true,
+                                      });
+                                      Navigator.pop(context);
+                                      showDialog(
+                                        context: context,
+                                        builder: (context) {
+                                          return AlertDialog(
+                                            backgroundColor: Colors.white,
+                                            title:
+                                                Text("Đã gửi yêu cầu xác nhận"),
+                                            content: Text(
+                                              "Người tuyển dụng sẽ xác nhận yêu cầu của bạn sớm thôi",
+                                            ),
+                                            actions: [
+                                              TextButton(
+                                                onPressed: () {
+                                                  Navigator.pop(context);
+                                                },
+                                                child: Text(
+                                                  'Đóng',
+                                                  style: TextStyle(
+                                                      color: Color.fromRGBO(
+                                                          67, 101, 222, 1),
+                                                      fontSize: 16),
+                                                ),
+                                              ),
+                                            ],
+                                          );
+                                        },
+                                      );
+                                    }
+                                  },
+                                  child: Text(
+                                    'Chắc chắn',
+                                    style: TextStyle(
+                                        color: Color.fromRGBO(67, 101, 222, 1),
+                                        fontSize: 16),
+                                  ),
+                                ),
+                              ],
+                            );
+                          })
+                      : () {};
             },
             style: ElevatedButton.styleFrom(
-                backgroundColor: isFeedback == true
-                    ? Colors.green
-                    : Color.fromRGBO(67, 101, 222, 1)),
+                backgroundColor: isDone == true
+                    ? isFeedback == true
+                        ? Colors.green
+                        : Color.fromRGBO(67, 101, 222, 1)
+                    : isSend == true
+                        ? Colors.green
+                        : Color.fromRGBO(67, 101, 222, 1)),
             child: isDone == true
                 ? isFeedback == true
                     ? Text(
@@ -750,10 +867,15 @@ class _ConfirmationPageFreelancerState
                         'Yêu cầu đánh giá',
                         style: TextStyle(color: Colors.white, fontSize: 16),
                       )
-                : Text(
-                    "Hủy công việc",
-                    style: TextStyle(color: Colors.white, fontSize: 16),
-                  )),
+                : isSend == true
+                    ? Text(
+                        "Đang chờ xác nhận",
+                        style: TextStyle(color: Colors.white, fontSize: 16),
+                      )
+                    : Text(
+                        "Đánh dấu là đã hoàn thành",
+                        style: TextStyle(color: Colors.white, fontSize: 16),
+                      )),
       ],
     );
   }

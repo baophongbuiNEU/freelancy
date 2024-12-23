@@ -152,12 +152,18 @@ class _FinancePageState extends State<FinancePage>
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(title,
-                    style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                        color: Color.fromRGBO(67, 101, 222, 1))),
-                Icon(icon, size: 23, color: Color.fromRGBO(67, 101, 222, 1)),
+                Expanded(
+                  child: Text(title,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: Color.fromRGBO(67, 101, 222, 1))),
+                ),
+                Expanded(
+                    flex: 0,
+                    child: Icon(icon,
+                        size: 23, color: Color.fromRGBO(67, 101, 222, 1))),
               ],
             ),
             SizedBox(height: 8),

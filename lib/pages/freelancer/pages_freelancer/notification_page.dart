@@ -1,13 +1,12 @@
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:freelancer/components/notfi_compo/enroll_noti.dart';
 import 'package:freelancer/components/notfi_compo/feedback_noti.dart';
 import 'package:freelancer/components/notfi_compo/finance_noti.dart';
+import 'package:freelancer/components/notfi_compo/mark_done_noti.dart';
 import 'package:freelancer/components/notfi_compo/request_feedback_noti.dart';
 import 'package:freelancer/components/notfi_compo/result_noti.dart';
-
 
 class NotificationPage extends StatefulWidget {
   const NotificationPage({super.key});
@@ -129,13 +128,19 @@ class _NotificationPageState extends State<NotificationPage>
                 itemCount: snapshot.data!.docs.length,
                 itemBuilder: (context, index) {
                   final post = snapshot.data!.docs[index];
-
-                  return EnrollNoti(
-                    jobID: post["jobID"],
-                    uid: post["candidateID"],
-                    clicked: post["clicked"],
-                    postID: post.id,
-                  );
+                  return post['category'] == 'enroll'
+                      ? EnrollNoti(
+                          jobID: post["jobID"],
+                          uid: post["candidateID"],
+                          clicked: post["clicked"],
+                          postID: post.id,
+                        )
+                      : MarkDoneNoti(
+                          jobID: post["jobID"],
+                          uid: post["candidateID"],
+                          clicked: post["clicked"],
+                          postID: post.id,
+                        );
                 }),
           );
         } else if (snapshot.hasError) {

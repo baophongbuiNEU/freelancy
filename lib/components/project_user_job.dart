@@ -13,7 +13,6 @@ class ProjectUserJob extends StatefulWidget {
     required this.enroll_end_time,
     required this.happeningTime,
     required this.location,
-    required this.requirement,
     required this.salary,
     required this.skills,
     required this.title,
@@ -31,7 +30,6 @@ class ProjectUserJob extends StatefulWidget {
   String uid = '';
   String description = '';
   String location = '';
-  String requirement = '';
   String salary = '';
   String category = '';
   String skills = '';

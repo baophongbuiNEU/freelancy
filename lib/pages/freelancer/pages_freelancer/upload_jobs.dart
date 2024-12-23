@@ -70,7 +70,7 @@ class _UploadJobsState extends State<UploadJobs> {
         );
       },
     );
-    if (_formKey.currentState!.validate() || _pickedImage != null) {
+    if (_formKey.currentState!.validate()) {
       final user = FirebaseAuth.instance.currentUser;
       if (user != null) {
         final doc = await FirebaseFirestore.instance
@@ -91,8 +91,8 @@ class _UploadJobsState extends State<UploadJobs> {
           'location': _locationController.text.isEmpty
               ? "Online"
               : _locationController.text,
-          'requirement': _requirementController.text,
           'salary': _salaryController.text,
+          'sent': false,
           'skills': _skillsController.text,
           'experience': _experienceLevel,
           'happening_time': Timestamp.fromDate(_happeningDate!),
@@ -101,7 +101,7 @@ class _UploadJobsState extends State<UploadJobs> {
           'jobID': jobID,
           'enrolls': enrolls,
           'accepted': accepted,
-          'numberCandidates': _numberOfCandidates,
+          // 'numberCandidates': _numberOfCandidates,
         });
 
         Navigator.pop(context);
@@ -119,7 +119,6 @@ class _UploadJobsState extends State<UploadJobs> {
                     style: TextStyle(color: Color.fromRGBO(67, 101, 222, 1)),
                   ),
                   onPressed: () {
-                    Navigator.pop(context);
                     Navigator.pop(context);
                     Navigator.pop(context);
                   },
@@ -305,41 +304,43 @@ class _UploadJobsState extends State<UploadJobs> {
                     return null;
                   },
                 ),
-                SizedBox(height: 16),
-                TextFormField(
-                  decoration: InputDecoration(
-                    labelText: 'Số lượng ứng viên',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(5),
-                      borderSide: BorderSide(color: Colors.grey, width: 1.5),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(5),
-                      borderSide: BorderSide(
-                          color: Color.fromRGBO(67, 101, 222, 1), width: 1.5),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(5),
-                      borderSide: BorderSide(color: Colors.grey, width: 1.5),
-                    ),
-                    floatingLabelStyle:
-                        TextStyle(color: Color.fromRGBO(67, 101, 222, 1)),
-                  ),
-                  keyboardType: TextInputType.number,
-                  onChanged: (value) {
-                    setState(() {
-                      _numberOfCandidates = int.parse(value);
-                    });
-                  },
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Vui lòng nhập số lượng ứng viên';
-                    } else if (int.parse(value) < 1) {
-                      return 'Số lượng ứng viên phải là số nguyên lớn hơn 0';
-                    }
-                    return null;
-                  },
-                ),
+                SizedBox(height: 10),
+
+                // SizedBox(height: 16),
+                // TextFormField(
+                //   decoration: InputDecoration(
+                //     labelText: 'Số lượng ứng viên',
+                //     border: OutlineInputBorder(
+                //       borderRadius: BorderRadius.circular(5),
+                //       borderSide: BorderSide(color: Colors.grey, width: 1.5),
+                //     ),
+                //     focusedBorder: OutlineInputBorder(
+                //       borderRadius: BorderRadius.circular(5),
+                //       borderSide: BorderSide(
+                //           color: Color.fromRGBO(67, 101, 222, 1), width: 1.5),
+                //     ),
+                //     enabledBorder: OutlineInputBorder(
+                //       borderRadius: BorderRadius.circular(5),
+                //       borderSide: BorderSide(color: Colors.grey, width: 1.5),
+                //     ),
+                //     floatingLabelStyle:
+                //         TextStyle(color: Color.fromRGBO(67, 101, 222, 1)),
+                //   ),
+                //   keyboardType: TextInputType.number,
+                //   onChanged: (value) {
+                //     setState(() {
+                //       _numberOfCandidates = int.parse(value);
+                //     });
+                //   },
+                //   validator: (value) {
+                //     if (value == null || value.isEmpty) {
+                //       return 'Vui lòng nhập số lượng ứng viên';
+                //     } else if (int.parse(value) < 1) {
+                //       return 'Số lượng ứng viên phải là số nguyên lớn hơn 0';
+                //     }
+                //     return null;
+                //   },
+                // ),
                 SizedBox(height: 10),
                 TextFormField(
                   decoration: InputDecoration(

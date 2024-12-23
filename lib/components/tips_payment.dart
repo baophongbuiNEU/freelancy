@@ -11,6 +11,8 @@ class PaymentConfirmationDialog extends StatefulWidget {
   final String jobTitle;
   final String clientName;
   final String employerName;
+  final int accepted;
+  // final int numberCandidates;
 
   const PaymentConfirmationDialog({
     super.key,
@@ -20,6 +22,8 @@ class PaymentConfirmationDialog extends StatefulWidget {
     required this.jobTitle,
     required this.clientName,
     required this.employerName,
+    required this.accepted,
+    // required this.numberCandidates,
   });
 
   @override
@@ -30,6 +34,8 @@ class PaymentConfirmationDialog extends StatefulWidget {
 class _PaymentConfirmationDialogState extends State<PaymentConfirmationDialog> {
   final TextEditingController _tipsController = TextEditingController();
   double _totalAmount = 0.0;
+  // List<String> accepted = [];
+  // num numberCandidates = 0;
 
   @override
   void initState() {
@@ -90,10 +96,6 @@ class _PaymentConfirmationDialogState extends State<PaymentConfirmationDialog> {
         ),
         TextButton(
           onPressed: () async {
-            // Perform payment confirmation logic here
-            // Update the finance collection with the total amount paid
-            // Navigate to the payment confirmation screen
-            // Show a success alert dialog
             Navigator.pop(context);
             showDialog(
               context: context,
@@ -157,12 +159,7 @@ class _PaymentConfirmationDialogState extends State<PaymentConfirmationDialog> {
               'income':
                   FieldValue.increment(num.parse(_totalAmount.toString())),
             });
-            FirebaseFirestore.instance
-                .collection('jobs')
-                .doc(widget.jobID)
-                .update({
-              'category': 'Done',
-            });
+
             DocumentReference notiPlus = FirebaseFirestore.instance
                 .collection("notifications")
                 .doc(); // Generate a unique document ID
@@ -178,18 +175,16 @@ class _PaymentConfirmationDialogState extends State<PaymentConfirmationDialog> {
               'timestamp': Timestamp.now(),
               'employerName': widget.employerName,
             });
-            // DocumentReference notiDecrease = FirebaseFirestore.instance
-            //     .collection("notifications")
-            //     .doc(); // Generate a unique document ID
-            // notiDecrease.set({
-            //   'clicked': false,
-            //   'type': 'finance_noti',
-            //   'jobID': widget.jobID,
-            //   'candidateID': FirebaseAuth.instance.currentUser!.uid,
-            //   'salary': num.parse(_totalAmount.toString()),
-            //   'employerUID': widget.uid,
-            //   'timestamp': Timestamp.now(),
-            // });
+
+            // Check if the job is complete and update the category
+            // if (widget.accepted == widget.numberCandidates) {
+            await FirebaseFirestore.instance
+                .collection('jobs')
+                .doc(widget.jobID)
+                .update({
+              'category': 'Done',
+            });
+            // }
           },
           child: Text(
             'Xác nhận',

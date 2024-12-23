@@ -78,6 +78,24 @@ class _RegisterState extends State<Register> {
       );
       return;
     }
+    String email = _emailController.text;
+    if (!email.endsWith('@gmail.com')) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Email phải kết thúc là gmail.com"),
+        ),
+      );
+      return;
+    }
+    String password = _passwordController.text;
+    if (password.length < 8) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Mật khẩu phải đủ 8 kí tự"),
+        ),
+      );
+      return;
+    }
 
     // Show loading circle
     showDialog(
@@ -91,6 +109,7 @@ class _RegisterState extends State<Register> {
 
     //get auth service
     final _auth = AuthService();
+// Validate email
 
     try {
       await _auth.signUpWithEmailPassword(

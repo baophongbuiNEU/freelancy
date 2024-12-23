@@ -41,6 +41,7 @@ class _JobSearchPageState extends State<JobSearchPage> {
     var data = await FirebaseFirestore.instance
         .collection('users')
         .orderBy('name')
+        .limit(5)
         .get();
     setState(() {
       _nameResults = data.docs;
@@ -54,6 +55,7 @@ class _JobSearchPageState extends State<JobSearchPage> {
         .where("category", isNotEqualTo: "Done")
         .where('enroll_end_time', isGreaterThan: Timestamp.now())
         .orderBy("timestamp", descending: true)
+        .limit(5)
         .get();
     setState(() {
       _jobResults = data.docs;

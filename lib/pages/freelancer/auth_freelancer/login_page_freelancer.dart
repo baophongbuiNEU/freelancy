@@ -137,6 +137,7 @@ class Login extends StatelessWidget {
                   ),
                   Text(
                     "Đăng Nhập để tìm việc ngay",
+                    textAlign: TextAlign.center,
                     style: TextStyle(
                         color: Colors.black,
                         fontSize: 25,
@@ -160,20 +161,21 @@ class Login extends StatelessWidget {
                     iconData: Icons.lock_outlined,
                     controller: _passwordController,
                   ),
-                  Row(
-                    children: [
-                      Spacer(),
-                      TextButton(
-                        onPressed: () {},
-                        child: Text(
-                          "Quên mật khẩu?",
-                          style: TextStyle(
-                              color: Color.fromRGBO(67, 101, 222, 1),
-                              fontSize: 15),
-                        ),
-                      ),
-                    ],
-                  ),
+                  // Row(
+                  //   children: [
+                  //     Spacer(),
+                  //     TextButton(
+                  //       onPressed: () {},
+                  //       child: Text(
+                  //         "Quên mật khẩu?",
+                  //         style: TextStyle(
+                  //             color: Color.fromRGBO(67, 101, 222, 1),
+                  //             fontSize: 15),
+                  //       ),
+                  //     ),
+                  //   ],
+                  // ),
+                  const SizedBox(height: 20),
                   MyButton(onTap: () => login(context), text: "Đăng Nhập"),
                   const SizedBox(
                     height: 25,

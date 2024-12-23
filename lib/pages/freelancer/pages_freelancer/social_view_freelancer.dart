@@ -8,7 +8,6 @@ import 'package:freelancer/pages/freelancer/pages_freelancer/upload_jobs.dart';
 import 'package:freelancer/pages/freelancer/pages_freelancer/upload_post.dart';
 import 'package:freelancer/services/auth/auth_service.dart';
 
-
 class SocialViewFreelancer extends StatefulWidget {
   const SocialViewFreelancer({super.key});
 
@@ -33,14 +32,15 @@ class _SocialViewFreelancerState extends State<SocialViewFreelancer>
   String position = "";
   bool jobFillter = true;
   bool candidateFillter = true;
+  String candidateSort = "";
+
   bool shareFillter = true;
 
   @override
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
-    _searchController.addListener(_onSearchChanged);
+    _tabController = TabController(length: 2, vsync: this);
     _fetchUserData();
     _refreshFuture = _loadData();
   }
@@ -74,11 +74,6 @@ class _SocialViewFreelancerState extends State<SocialViewFreelancer>
     _tabController.dispose();
     _searchController.dispose();
     super.dispose();
-  }
-
-  void _onSearchChanged() {
-    // Implement search functionality here
-    print(_searchController.text);
   }
 
   void postPost() async {
@@ -137,12 +132,26 @@ class _SocialViewFreelancerState extends State<SocialViewFreelancer>
       switch (value) {
         case 'new_to_old':
           candidateFillter = true;
+          candidateSort = "";
 
           _refreshPage();
           break;
 
         case 'old_to_new':
           candidateFillter = false;
+          candidateSort = "";
+
+          _refreshPage();
+          break;
+        case 'Ứng viên':
+          candidateFillter = true;
+          candidateSort = "Chia sẻ";
+          _refreshPage();
+          break;
+
+        case 'Chia sẻ':
+          candidateFillter = true;
+          candidateSort = "Ứng viên";
           _refreshPage();
           break;
       }
@@ -172,6 +181,13 @@ class _SocialViewFreelancerState extends State<SocialViewFreelancer>
           'Khám phá',
         ),
         elevation: 0,
+        actions: [
+          if (MediaQuery.of(context).size.height < 700)
+            IconButton(
+              icon: Icon(Icons.add),
+              onPressed: () => _addNewJobOrPost(context),
+            ),
+        ],
       ),
       body: FutureBuilder<void>(
         future: _refreshFuture,
@@ -181,63 +197,48 @@ class _SocialViewFreelancerState extends State<SocialViewFreelancer>
           }
           return Column(
             children: [
-              // Padding(
-              //   padding: const EdgeInsets.all(16.0),
-              //   child: TextField(
-              //     controller: _searchController,
-              //     decoration: InputDecoration(
-              //       hintText: 'Tìm kiếm công việc, ứng viên, công ty...',
-              //       prefixIcon: Icon(Icons.search),
-              //       border: OutlineInputBorder(
-              //         borderRadius: BorderRadius.circular(30),
-              //         borderSide: BorderSide.none,
-              //       ),
-              //       filled: true,
-              //       fillColor: Colors.white,
-              //     ),
-              //   ),
-              // ),
-              Padding(
-                padding: const EdgeInsets.only(left: 15, right: 15),
-                child: Container(
-                  padding: EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withOpacity(0.3),
-                          spreadRadius: 2,
-                          blurRadius: 3,
-                          offset: Offset(0, 2),
+              if (MediaQuery.of(context).size.height > 700)
+                Padding(
+                  padding: const EdgeInsets.only(left: 15, right: 15),
+                  child: Container(
+                    padding: EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.withOpacity(0.3),
+                            spreadRadius: 2,
+                            blurRadius: 3,
+                            offset: Offset(0, 2),
+                          ),
+                        ],
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12)),
+                    child: Column(
+                      children: [
+                        Row(
+                          children: [
+                            CircleAvatar(
+                              radius: 20,
+                              backgroundImage: NetworkImage(avatar),
+                            ),
+                            SizedBox(width: 12),
+                            _uploadNewPost(context),
+                          ],
                         ),
                       ],
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12)),
-                  child: Column(
-                    children: [
-                      Row(
-                        children: [
-                          CircleAvatar(
-                            radius: 20,
-                            backgroundImage: NetworkImage(avatar),
-                          ),
-                          SizedBox(width: 12),
-                          _uploadNewPost(context),
-                        ],
-                      ),
-                    ],
+                    ),
                   ),
                 ),
-              ),
-
-              SizedBox(
-                height: 15,
-              ),
+              if (MediaQuery.of(context).size.height > 700)
+                SizedBox(
+                  height: 15,
+                ),
               TabBar(
                 controller: _tabController,
                 tabs: const [
                   Tab(text: 'Việc làm'),
-                  Tab(text: 'Ứng viên'),
-                  Tab(text: 'Chia sẻ'),
+                  Tab(text: 'Bài viết'),
+                  // Tab(text: 'Chia sẻ'),
                 ],
                 labelColor: Color.fromRGBO(67, 101, 222, 1),
                 labelStyle: TextStyle(
@@ -326,6 +327,14 @@ class _SocialViewFreelancerState extends State<SocialViewFreelancer>
                                     value: 'old_to_new',
                                     child: Text('Cũ đến mới'),
                                   ),
+                                  PopupMenuItem<String>(
+                                    value: 'Ứng viên',
+                                    child: Text('Tìm theo Ứng viên'),
+                                  ),
+                                  PopupMenuItem<String>(
+                                    value: 'Chia sẻ',
+                                    child: Text('Tìm theo Chia sẻ'),
+                                  ),
                                 ],
                               ),
                             ],
@@ -334,47 +343,47 @@ class _SocialViewFreelancerState extends State<SocialViewFreelancer>
                         Expanded(child: _buildPostListCandidate()),
                       ],
                     ),
-                    Column(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(right: 20),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Text(
-                                "Sắp xếp theo",
-                                style: TextStyle(
-                                  color: Color.fromRGBO(67, 101, 222, 1),
-                                ),
-                              ),
-                              SizedBox(
-                                width: 0,
-                              ),
-                              PopupMenuButton<String>(
-                                color: Colors.white,
-                                icon: Icon(
-                                  Icons.filter_list,
-                                  color: Color.fromRGBO(67, 101, 222, 1),
-                                ),
-                                onSelected: (value) => sortShare(value),
-                                itemBuilder: (context) => [
-                                  PopupMenuItem<String>(
-                                    value: 'new_to_old',
-                                    child: Text('Mới đến cũ'),
-                                  ),
-                                  PopupMenuItem<String>(
-                                    value: 'old_to_new',
-                                    child: Text('Cũ đến mới'),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                        Expanded(child: _buildPostListShare()),
-                      ],
-                    ),
+                    // Column(
+                    //   children: [
+                    //     Padding(
+                    //       padding: const EdgeInsets.only(right: 20),
+                    //       child: Row(
+                    //         mainAxisAlignment: MainAxisAlignment.end,
+                    //         crossAxisAlignment: CrossAxisAlignment.center,
+                    //         children: [
+                    //           Text(
+                    //             "Sắp xếp theo",
+                    //             style: TextStyle(
+                    //               color: Color.fromRGBO(67, 101, 222, 1),
+                    //             ),
+                    //           ),
+                    //           SizedBox(
+                    //             width: 0,
+                    //           ),
+                    //           PopupMenuButton<String>(
+                    //             color: Colors.white,
+                    //             icon: Icon(
+                    //               Icons.filter_list,
+                    //               color: Color.fromRGBO(67, 101, 222, 1),
+                    //             ),
+                    //             onSelected: (value) => sortShare(value),
+                    //             itemBuilder: (context) => [
+                    //               PopupMenuItem<String>(
+                    //                 value: 'new_to_old',
+                    //                 child: Text('Mới đến cũ'),
+                    //               ),
+                    //               PopupMenuItem<String>(
+                    //                 value: 'old_to_new',
+                    //                 child: Text('Cũ đến mới'),
+                    //               ),
+                    //             ],
+                    //           ),
+                    //         ],
+                    //       ),
+                    //     ),
+                    //     Expanded(child: _buildPostListShare()),
+                    //   ],
+                    // ),
                   ],
                 ),
               ),
@@ -444,7 +453,7 @@ class _SocialViewFreelancerState extends State<SocialViewFreelancer>
     return StreamBuilder(
       stream: FirebaseFirestore.instance
           .collection("posts")
-          .where('category', isEqualTo: 'Ứng viên')
+          .where('category', isNotEqualTo: candidateSort)
           .orderBy("timestamp", descending: candidateFillter)
           .snapshots(),
       builder: (context, snapshot) {
@@ -556,221 +565,229 @@ class _SocialViewFreelancerState extends State<SocialViewFreelancer>
       flex: 1000,
       child: GestureDetector(
         onTap: () {
-          showModalBottomSheet(
-            backgroundColor: Color.fromRGBO(250, 250, 250, 1),
-            showDragHandle: true,
-            context: context,
-            builder: (context) {
-              return Padding(
-                  padding: EdgeInsets.only(bottom: 50),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      ListTile(
-                        title: Text(
-                          'Chọn thể loại bài viết bạn muốn đăng:',
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 18),
-                        ),
-                      ),
-                      Padding(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 25,
-                        ),
-                        child: Column(
-                          children: [
-                            GestureDetector(
-                              onTap: () async {
-                                Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                            builder: (context) => UploadJobs()))
-                                    .then((_) {
-                                  _refreshPage();
-                                });
-                              },
-                              child: Container(
-                                  padding: EdgeInsets.symmetric(
-                                      vertical: 20, horizontal: 25),
-                                  width: double.infinity,
-                                  decoration: BoxDecoration(
-                                      border: Border.all(
-                                          color: const Color.fromARGB(
-                                              255, 187, 187, 187),
-                                          width: 1.5),
-                                      borderRadius: BorderRadius.circular(5)),
-                                  child: Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    children: [
-                                      Expanded(
-                                          flex: 0,
-                                          child: Icon(Icons.work_outline)),
-                                      SizedBox(
-                                        width: 10,
-                                      ),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              'Việc làm',
-                                              overflow: TextOverflow.ellipsis,
-                                              style: TextStyle(fontSize: 17),
-                                            ),
-                                            Text(
-                                              "Đăng tin tuyển dụng cho công việc của bạn",
-                                              overflow: TextOverflow.ellipsis,
-                                              style: TextStyle(
-                                                  color: Colors.grey[600],
-                                                  fontSize: 15),
-                                            )
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  )),
-                            ),
-                            SizedBox(
-                              height: 15,
-                            ),
-                            GestureDetector(
-                              onTap: () => Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => UploadPost(
-                                            gallery: true,
-                                            selectedRole: "Ứng viên",
-                                          ))).then((_) {
-                                _refreshPage();
-                              }),
-                              child: Container(
-                                  padding: EdgeInsets.symmetric(
-                                      vertical: 20, horizontal: 25),
-                                  width: double.infinity,
-                                  decoration: BoxDecoration(
-                                      border: Border.all(
-                                          color: const Color.fromARGB(
-                                              255, 187, 187, 187),
-                                          width: 1.5),
-                                      borderRadius: BorderRadius.circular(5)),
-                                  child: Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    children: [
-                                      Expanded(
-                                          flex: 0,
-                                          child: Icon(Icons.person_outline)),
-                                      SizedBox(
-                                        width: 10,
-                                      ),
-                                      Expanded(
-                                        child: Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              'Giới thiệu Ứng viên',
-                                              overflow: TextOverflow.ellipsis,
-                                              style: TextStyle(fontSize: 17),
-                                            ),
-                                            Text(
-                                              "Đăng hồ sơ của bạn",
-                                              overflow: TextOverflow.ellipsis,
-                                              style: TextStyle(
-                                                  color: Colors.grey[600],
-                                                  fontSize: 15),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  )),
-                            ),
-                            SizedBox(
-                              height: 15,
-                            ),
-                            GestureDetector(
-                              onTap: () => Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => UploadPost(
-                                            gallery: true,
-                                            selectedRole: "Chia sẻ",
-                                          ))).then((_) {
-                                _refreshPage();
-                              }),
-                              child: Container(
-                                  padding: EdgeInsets.symmetric(
-                                      vertical: 20, horizontal: 25),
-                                  width: double.infinity,
-                                  decoration: BoxDecoration(
-                                      border: Border.all(
-                                          color: const Color.fromARGB(
-                                              255, 187, 187, 187),
-                                          width: 1.5),
-                                      borderRadius: BorderRadius.circular(5)),
-                                  child: Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    children: [
-                                      Expanded(
-                                          flex: 0,
-                                          child: Icon(Icons.book_outlined)),
-                                      SizedBox(
-                                        width: 10,
-                                      ),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              'Chia sẻ',
-                                              overflow: TextOverflow.ellipsis,
-                                              style: TextStyle(fontSize: 17),
-                                            ),
-                                            Text(
-                                              "Đăng kiến thức, kinh nghiệm, trải nghiệm",
-                                              overflow: TextOverflow.ellipsis,
-                                              style: TextStyle(
-                                                  color: Colors.grey[600],
-                                                  fontSize: 15),
-                                            )
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  )),
-                            ),
-                          ],
-                        ),
-                      )
-                    ],
-                  ));
-            },
-          );
+          _addNewJobOrPost(context);
         },
         child: Row(
           children: const [
-            Text(
-              "Bạn đang nghĩ gì",
-              style: TextStyle(
-                  color: Colors.grey,
-                  fontSize: 17,
-                  fontWeight: FontWeight.w400),
+            Expanded(
+              child: Text(
+                "Đăng tải công việc và bài viết tại đây!",
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                    color: Colors.grey,
+                    fontSize: 17,
+                    fontWeight: FontWeight.w400),
+              ),
             ),
-            Spacer(),
-            Icon(
-              Icons.arrow_forward_ios,
-              size: 20,
-              color: Colors.grey,
+            // Spacer(),
+            Expanded(
+              flex: 0,
+              child: Icon(
+                Icons.arrow_forward_ios,
+                size: 20,
+                color: Colors.grey,
+              ),
             )
           ],
         ),
       ),
+    );
+  }
+
+  Future<dynamic> _addNewJobOrPost(BuildContext context) {
+    return showModalBottomSheet(
+      backgroundColor: Color.fromRGBO(250, 250, 250, 1),
+      showDragHandle: true,
+      context: context,
+      builder: (context) {
+        return Padding(
+            padding: EdgeInsets.only(bottom: 50),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Expanded(
+                  flex: 0,
+                  child: ListTile(
+                    title: Text(
+                      'Chọn thể loại bạn muốn đăng:',
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 25,
+                  ),
+                  child: Column(
+                    children: [
+                      GestureDetector(
+                        onTap: () async {
+                          Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => UploadJobs()))
+                              .then((_) {
+                            _refreshPage();
+                          });
+                        },
+                        child: Container(
+                            padding: EdgeInsets.symmetric(
+                                vertical: 20, horizontal: 25),
+                            width: double.infinity,
+                            decoration: BoxDecoration(
+                                border: Border.all(
+                                    color: const Color.fromARGB(
+                                        255, 187, 187, 187),
+                                    width: 1.5),
+                                borderRadius: BorderRadius.circular(5)),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Expanded(
+                                    flex: 0, child: Icon(Icons.work_outline)),
+                                SizedBox(
+                                  width: 10,
+                                ),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Việc làm',
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(fontSize: 17),
+                                      ),
+                                      Text(
+                                        "Đăng tin tuyển dụng cho công việc của bạn",
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                            color: Colors.grey[600],
+                                            fontSize: 15),
+                                      )
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            )),
+                      ),
+                      SizedBox(
+                        height: 15,
+                      ),
+                      GestureDetector(
+                        onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => UploadPost(
+                                      gallery: true,
+                                      selectedRole: "Ứng viên",
+                                    ))).then((_) {
+                          _refreshPage();
+                        }),
+                        child: Container(
+                            padding: EdgeInsets.symmetric(
+                                vertical: 20, horizontal: 25),
+                            width: double.infinity,
+                            decoration: BoxDecoration(
+                                border: Border.all(
+                                    color: const Color.fromARGB(
+                                        255, 187, 187, 187),
+                                    width: 1.5),
+                                borderRadius: BorderRadius.circular(5)),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Expanded(
+                                    flex: 0, child: Icon(Icons.person_outline)),
+                                SizedBox(
+                                  width: 10,
+                                ),
+                                Expanded(
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Giới thiệu Ứng viên',
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(fontSize: 17),
+                                      ),
+                                      Text(
+                                        "Đăng hồ sơ của bạn",
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                            color: Colors.grey[600],
+                                            fontSize: 15),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            )),
+                      ),
+                      SizedBox(
+                        height: 15,
+                      ),
+                      GestureDetector(
+                        onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => UploadPost(
+                                      gallery: true,
+                                      selectedRole: "Chia sẻ",
+                                    ))).then((_) {
+                          _refreshPage();
+                        }),
+                        child: Container(
+                            padding: EdgeInsets.symmetric(
+                                vertical: 20, horizontal: 25),
+                            width: double.infinity,
+                            decoration: BoxDecoration(
+                                border: Border.all(
+                                    color: const Color.fromARGB(
+                                        255, 187, 187, 187),
+                                    width: 1.5),
+                                borderRadius: BorderRadius.circular(5)),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Expanded(
+                                    flex: 0, child: Icon(Icons.book_outlined)),
+                                SizedBox(
+                                  width: 10,
+                                ),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Chia sẻ',
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(fontSize: 17),
+                                      ),
+                                      Text(
+                                        "Đăng kiến thức, kinh nghiệm, trải nghiệm",
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                            color: Colors.grey[600],
+                                            fontSize: 15),
+                                      )
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            )),
+                      ),
+                    ],
+                  ),
+                )
+              ],
+            ));
+      },
     );
   }
 }

@@ -263,29 +263,28 @@ class _JobListState extends State<JobList> {
                                 ],
                               ),
                             ),
-                            Expanded(
-                              flex: 0,
-                              child: PopupMenuButton<String>(
-                                color: Colors.white,
-                                onSelected: (value) {
-                                  if (jobData['uid'] ==
-                                      FirebaseAuth.instance.currentUser!.uid) {
+                            if (jobData['uid'] ==
+                                FirebaseAuth.instance.currentUser!.uid)
+                              Expanded(
+                                flex: 0,
+                                child: PopupMenuButton<String>(
+                                  color: Colors.white,
+                                  onSelected: (value) {
                                     // Delete the post
                                     _deleteJob();
                                     _deleteNotification();
-                                  }
-                                },
-                                itemBuilder: (context) => [
-                                  if (jobData['uid'] ==
-                                      FirebaseAuth.instance.currentUser!.uid)
-                                    PopupMenuItem<String>(
-                                      value: 'delete',
-                                      child: Text('Xóa bài đăng'),
-                                    ),
-                                ],
-                                icon: Icon(Icons.more_vert),
-                              ),
-                            )
+                                  },
+                                  itemBuilder: (context) => [
+                                    if (jobData['uid'] ==
+                                        FirebaseAuth.instance.currentUser!.uid)
+                                      PopupMenuItem<String>(
+                                        value: 'delete',
+                                        child: Text('Xóa bài đăng'),
+                                      ),
+                                  ],
+                                  icon: Icon(Icons.more_vert),
+                                ),
+                              )
                           ],
                         ),
                         Padding(

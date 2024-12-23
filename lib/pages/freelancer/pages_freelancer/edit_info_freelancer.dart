@@ -327,7 +327,10 @@ class _EditInfoFreelancerState extends State<EditInfoFreelancer> {
                                 value: _selectedCity.isEmpty
                                     ? null
                                     : _selectedCity,
-                                hint: Text('Chọn thành phố'),
+                                hint: Text(
+                                  'Chọn thành phố',
+                                  overflow: TextOverflow.ellipsis,
+                                ),
                                 onChanged: (String? newValue) {
                                   setState(() {
                                     _selectedCity = newValue!;
